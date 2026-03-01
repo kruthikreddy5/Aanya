@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鍛刀 — Forge of the Samurai</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#050404; --mid:#0e0a06; --panel:#181208; --card:#201608; --border:#2a1e0c;
+  --ember:#e85d04; --ember2:#ff6d00; --glow:#faa307; --dim-ember:#7a2800;
+  --gold:#c8922a; --gold2:#e8b84b; --steel:#8a9eb0; --fire:#ffedd0;
+  --text:#d8c8a8; --tdim:#6a5a40; --thead:#f0e0c0; --tfaint:#3a2e1e;
+  --rc:#8a9eb0; --ru:#4caf50; --rr:#2979ff; --re:#9c27b0; --rl:#ff9800; --rm:#ff1744;
+  --tr:.35s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--text);font-family:'Crimson Pro',Georgia,serif;font-size:17px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.6}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;animation:fadeUp .5s ease both}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* LAYOUT */
+.wrap{max-width:960px;margin:0 auto;padding:0 18px 80px}
+
+/* HOME */
+#homeCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.home-body{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:40px 20px;text-align:center}
+.big-kanji{font-size:clamp(6rem,18vw,14rem);color:rgba(232,93,4,.06);font-family:'Cinzel Decorative',serif;position:absolute;top:50%;left:50%;transform:translate(-50%,-52%);pointer-events:none;animation:kp 4s ease-in-out infinite}
+@keyframes kp{0%,100%{opacity:.5;transform:translate(-50%,-52%) scale(1)}50%{opacity:.9;transform:translate(-50%,-52%) scale(1.03)}}
+.home-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.8rem,6vw,4rem);font-weight:900;letter-spacing:.08em;color:var(--glow);text-shadow:0 0 40px rgba(250,163,7,.6),0 0 80px rgba(232,93,4,.3);animation:tg 3s ease-in-out infinite}
+@keyframes tg{0%,100%{text-shadow:0 0 40px rgba(250,163,7,.6),0 0 80px rgba(232,93,4,.3)}50%{text-shadow:0 0 70px rgba(250,163,7,.95),0 0 140px rgba(232,93,4,.6)}}
+.home-sub{font-family:'Cinzel',serif;font-size:clamp(.65rem,2vw,.85rem);letter-spacing:.45em;color:var(--tdim);margin-top:10px;text-transform:uppercase}
+.home-div{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--ember),transparent);margin:22px auto;position:relative}
+.home-div::before{content:'⬦';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--ember);font-size:.65rem;background:var(--ink);padding:0 6px}
+.home-tag{font-size:clamp(.9rem,2vw,1.1rem);color:var(--tdim);max-width:460px;font-style:italic;line-height:1.9;margin-bottom:36px}
+.home-stats{display:flex;gap:36px;flex-wrap:wrap;justify-content:center;margin-top:44px}
+.hs{text-align:center}
+.hs-n{font-family:'Cinzel',serif;font-size:2rem;color:var(--glow)}
+.hs-l{font-size:.68rem;letter-spacing:.2em;color:var(--tdim);text-transform:uppercase}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:11px 22px;background:linear-gradient(180deg,rgba(5,4,4,.97) 0%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,.03)}
+.nav-brand{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.3em;color:var(--ember);cursor:pointer}
+.nav-r{display:flex;align-items:center;gap:10px}
+.gold-pill{display:flex;align-items:center;gap:6px;font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold2);background:rgba(212,168,54,.1);border:1px solid rgba(212,168,54,.25);border-radius:3px;padding:6px 14px}
+
+/* BUTTONS */
+.btn{font-family:'Cinzel',serif;font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;padding:12px 28px;border:1px solid;border-radius:3px;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;text-decoration:none}
+.btn-fire{border-color:var(--ember);color:var(--fire);background:linear-gradient(135deg,var(--dim-ember),#5a1a00)}
+.btn-fire:hover{box-shadow:0 0 22px rgba(232,93,4,.5);transform:translateY(-1px);border-color:var(--ember2)}
+.btn-gold{border-color:var(--gold);color:var(--gold2);background:linear-gradient(135deg,rgba(122,92,26,.5),rgba(40,28,8,.8))}
+.btn-gold:hover{box-shadow:0 0 18px rgba(200,146,42,.4);transform:translateY(-1px)}
+.btn-ghost{border-color:var(--border);color:var(--tdim);background:transparent}
+.btn-ghost:hover{border-color:var(--steel);color:var(--text)}
+.btn-lg{padding:15px 44px;font-size:.9rem}
+.btn-sm{padding:7px 16px;font-size:.68rem}
+.btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn:active{transform:scale(.97)!important}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:20px}
+
+/* PROGRESS */
+.stage-hdr{padding:80px 0 28px;text-align:center}
+.prog{display:flex;align-items:center;justify-content:center;max-width:680px;margin:0 auto 24px}
+.prog-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative}
+.prog-step::before{content:'';position:absolute;top:12px;left:calc(-50% + 13px);right:calc(50% + 13px);height:1px;background:var(--border);transition:background var(--tr)}
+.prog-step:first-child::before{display:none}
+.prog-step.done::before{background:var(--dim-ember)}
+.prog-step.act::before{background:linear-gradient(90deg,var(--dim-ember),var(--ember))}
+.prog-dot{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:var(--mid);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.6rem;color:var(--tfaint);transition:all var(--tr);position:relative;z-index:1}
+.prog-step.done .prog-dot{border-color:var(--dim-ember);background:var(--dim-ember);color:var(--fire)}
+.prog-step.act .prog-dot{border-color:var(--glow);background:var(--ember);color:var(--fire);box-shadow:0 0 14px rgba(250,163,7,.6);animation:pp 1.5s ease infinite}
+@keyframes pp{0%,100%{box-shadow:0 0 14px rgba(250,163,7,.6)}50%{box-shadow:0 0 26px rgba(250,163,7,.9)}}
+.prog-lbl{font-family:'Cinzel',serif;font-size:.52rem;letter-spacing:.1em;color:var(--tfaint);text-transform:uppercase;transition:color var(--tr)}
+.prog-step.act .prog-lbl{color:var(--ember2)}
+.prog-step.done .prog-lbl{color:var(--tdim)}
+.stage-title{font-family:'Cinzel',serif;font-size:clamp(1.2rem,3.5vw,1.9rem);font-weight:700;color:var(--thead);letter-spacing:.06em;margin-bottom:6px}
+.stage-sub{font-size:.92rem;color:var(--tdim);font-style:italic;max-width:500px;margin:0 auto;line-height:1.7}
+
+/* PANELS */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:24px;margin-bottom:18px;position:relative;overflow:hidden}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--dim-ember),transparent)}
+.ptitle{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.35em;color:var(--ember);text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.ptitle::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+/* CARDS */
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.opt{background:var(--card);border:1px solid var(--border);border-radius:4px;cursor:pointer;transition:all .2s;overflow:hidden}
+.opt:hover{border-color:var(--dim-ember);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.4)}
+.opt.sel{border-color:var(--ember);box-shadow:0 0 20px rgba(232,93,4,.25),inset 0 0 20px rgba(232,93,4,.04)}
+.opt-tex{width:100%;height:72px;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.opt-tex canvas{display:block;width:100%;height:100%}
+.opt-body{padding:14px}
+.opt-name{font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;color:var(--thead);margin-bottom:4px}
+.opt-sub{font-size:.75rem;color:var(--ember2);font-style:italic;margin-bottom:6px}
+.opt-desc{font-size:.78rem;color:var(--tdim);line-height:1.55;margin-bottom:8px}
+.tags{display:flex;flex-wrap:wrap;gap:4px}
+.tag{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.05em;padding:2px 7px;border-radius:2px;border:1px solid}
+.tp{border-color:rgba(100,200,100,.4);color:#88dd88;background:rgba(50,150,50,.1)}
+.tn{border-color:rgba(200,80,80,.4);color:#dd8888;background:rgba(150,40,40,.1)}
+.tc{border-color:rgba(212,168,54,.4);color:var(--gold2)}
+.tm{border-color:rgba(180,80,255,.4);color:#cc88ff;background:rgba(120,40,200,.1)}
+.rb{display:inline-block;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.18em;padding:2px 9px;border-radius:2px;border:1px solid currentColor;margin-bottom:7px;text-transform:uppercase}
+.rc{color:var(--rc)}.ru{color:var(--ru)}.rr{color:var(--rr)}.re{color:var(--re)}.rl{color:var(--rl)}.rm{color:var(--rm)}
+
+/* STAT BARS */
+.stats{display:flex;flex-direction:column;gap:9px}
+.srow{display:flex;align-items:center;gap:10px}
+.slbl{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.08em;color:var(--tdim);width:88px;flex-shrink:0;text-transform:uppercase}
+.strack{flex:1;height:5px;background:rgba(255,255,255,.04);border-radius:3px;overflow:hidden}
+.sfill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.16,1,.3,1)}
+.sval{font-family:'Cinzel',serif;font-size:.78rem;color:var(--thead);width:32px;text-align:right}
+
+/* SLIDERS */
+.sl-wrap{margin-bottom:14px}
+.sl-lbl{display:flex;justify-content:space-between;margin-bottom:9px;font-family:'Cinzel',serif;font-size:.75rem;color:var(--tdim);text-transform:uppercase;letter-spacing:.1em}
+.sl-val{color:var(--glow);font-size:.95rem;font-weight:700}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--glow),var(--dim-ember));border:2px solid var(--ember2);box-shadow:0 0 10px rgba(250,163,7,.5);cursor:pointer;transition:.15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 18px rgba(250,163,7,.8)}
+
+/* CHAR CREATOR */
+.char-wrap{display:grid;grid-template-columns:240px 1fr;gap:22px;align-items:start}
+@media(max-width:640px){.char-wrap{grid-template-columns:1fr}}
+.char-sticky{position:sticky;top:90px}
+.char-canvas-box{border-radius:5px;overflow:hidden;border:1px solid var(--border);background:var(--card);margin-bottom:12px}
+#charCanvas{display:block;width:100%;height:auto}
+.char-name{font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:var(--thead);text-align:center;margin-bottom:3px}
+.char-title{font-size:.75rem;color:var(--ember2);text-align:center;font-style:italic}
+.sec-lbl{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.22em;color:var(--ember);text-transform:uppercase;margin-bottom:9px}
+.pick-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.pick{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.06em;padding:6px 13px;border:1px solid var(--border);border-radius:2px;background:var(--card);color:var(--tdim);cursor:pointer;transition:all .18s}
+.pick:hover{border-color:var(--dim-ember);color:var(--text)}
+.pick.sel{border-color:var(--ember);color:var(--ember2);background:rgba(232,93,4,.1)}
+.swatch-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px}
+.sw{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .18s}
+.sw:hover{transform:scale(1.15)}
+.sw.sel{border-color:var(--glow);box-shadow:0 0 10px rgba(250,163,7,.5);transform:scale(1.2)}
+.sw-lg{width:38px;height:38px;border-radius:4px}
+input[type=text],select{background:var(--card);border:1px solid var(--border);border-radius:3px;color:var(--thead);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 13px;width:100%;outline:none;transition:border-color .2s;margin-bottom:12px}
+input[type=text]:focus,select:focus{border-color:var(--dim-ember);box-shadow:0 0 0 2px rgba(232,93,4,.1)}
+select option{background:var(--mid)}
+
+/* CANVAS FORGE */
+.forge-stage{border-radius:4px;overflow:hidden;border:1px solid var(--border);position:relative;cursor:crosshair;user-select:none}
+.forge-stage canvas{display:block;width:100%;height:auto}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.hud-box{background:var(--card);border:1px solid var(--border);border-radius:3px;padding:11px 13px}
+.hud-lbl{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.2em;color:var(--tdim);text-transform:uppercase;margin-bottom:7px}
+.hud-track{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.hud-fill{height:100%;border-radius:2px;transition:width .15s}
+.hud-val{font-family:'Cinzel',serif;font-size:.85rem;color:var(--thead);font-weight:700}
+.forge-msg{text-align:center;margin-top:12px;font-size:.9rem;color:var(--tdim);font-style:italic;min-height:22px}
+.float-hit{position:absolute;pointer-events:none;font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;animation:fh .85s ease-out forwards;z-index:20;text-shadow:0 0 10px currentColor}
+@keyframes fh{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-55px) scale(1.3)}}
+
+/* HAMON */
+.hamon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:11px}
+.hamon-card{border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .2s;background:var(--card)}
+.hamon-card:hover{border-color:var(--dim-ember);transform:translateY(-2px)}
+.hamon-card.sel{border-color:var(--ember);box-shadow:0 0 14px rgba(232,93,4,.3)}
+.hamon-prev{display:block;width:100%;height:65px}
+.hamon-lbl{padding:9px 11px;font-family:'Cinzel',serif;font-size:.72rem;color:var(--text)}
+
+/* TWO COL */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:580px){.two{grid-template-columns:1fr}}
+
+/* STAGE NAV */
+.stage-nav{display:flex;justify-content:space-between;align-items:center;margin-top:26px;padding-top:22px;border-top:1px solid var(--border)}
+.snr{display:flex;gap:12px}
+
+/* REVEAL */
+#revCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.rev-body{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:80px 20px 60px;max-width:880px;margin:0 auto;text-align:center}
+.rev-phase{display:none;width:100%;animation:fadeUp .7s ease both}
+.rev-phase.act{display:flex;flex-direction:column;align-items:center}
+.rev-sword-wrap{width:100%;max-width:680px;margin:28px auto;border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,.06);background:rgba(0,0,0,.45)}
+#revSwordCanvas{display:block;width:100%;height:auto}
+.rev-name{font-family:'Cinzel Decorative',serif;font-size:clamp(1.6rem,4vw,2.8rem);font-weight:900;color:var(--glow);letter-spacing:.07em;margin:14px 0 6px}
+.rev-rar{font-family:'Cinzel',serif;font-size:.82rem;letter-spacing:.32em;padding:5px 18px;border-radius:2px;border:1px solid currentColor;text-transform:uppercase;margin-bottom:20px;display:inline-block}
+.rev-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;width:100%;max-width:580px;margin:18px auto}
+@media(max-width:500px){.rev-stats{grid-template-columns:repeat(2,1fr)}}
+.rsb{background:rgba(18,12,6,.85);border:1px solid var(--border);border-radius:3px;padding:13px 8px;text-align:center;opacity:0;transform:translateY(18px);transition:all .5s cubic-bezier(.16,1,.3,1)}
+.rsb.show{opacity:1;transform:none}
+.rsb-v{font-family:'Cinzel',serif;font-size:1.9rem;font-weight:900;line-height:1;margin-bottom:5px}
+.rsb-l{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.18em;color:var(--tdim);text-transform:uppercase}
+.rev-val{font-family:'Cinzel',serif;text-align:center;margin:22px 0;padding:22px;background:rgba(212,168,54,.06);border:1px solid rgba(212,168,54,.2);border-radius:5px;width:100%;max-width:380px}
+.rv-lbl{font-size:.68rem;letter-spacing:.22em;color:var(--tdim);margin-bottom:7px;text-transform:uppercase}
+.rv-amt{font-size:2.4rem;color:var(--gold2);text-shadow:0 0 18px rgba(240,200,96,.5);font-weight:900}
+.rv-u{font-size:.82rem;color:var(--gold)}
+.rev-char{display:flex;align-items:center;gap:20px;background:rgba(18,12,6,.85);border:1px solid var(--border);border-radius:5px;padding:20px;margin-top:20px;width:100%;max-width:580px}
+#revCharCanvas{border-radius:3px;flex-shrink:0}
+.rev-ci{text-align:left}
+
+/* INVENTORY */
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.inv-card{background:var(--card);border:1px solid var(--border);border-radius:5px;overflow:hidden;transition:all .2s;cursor:pointer}
+.inv-card:hover{border-color:var(--dim-ember);transform:translateY(-2px);box-shadow:0 7px 18px rgba(0,0,0,.4)}
+.inv-sword{width:100%;height:90px;background:var(--mid)}
+.inv-sword canvas{display:block;width:100%;height:100%}
+.inv-body{padding:13px}
+.inv-name{font-family:'Cinzel',serif;font-size:.85rem;font-weight:700;color:var(--thead);margin-bottom:3px}
+.inv-meta{font-size:.75rem;color:var(--tdim);margin-bottom:9px;display:flex;justify-content:space-between;align-items:center}
+.inv-val{font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold2)}
+
+/* MARKET */
+.mkt-card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:18px;margin-bottom:14px;display:grid;grid-template-columns:180px 1fr auto;gap:18px;align-items:center;transition:border-color .2s}
+.mkt-card:hover{border-color:var(--dim-ember)}
+@media(max-width:580px){.mkt-card{grid-template-columns:1fr}}
+.bid-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem}
+.bidder{color:var(--text)}.bid-amt{color:var(--gold2);font-family:'Cinzel',serif}
+.flaw-chip{display:inline-block;font-family:'Cinzel',serif;font-size:.62rem;padding:3px 9px;border-radius:2px;border:1px solid rgba(180,40,20,.4);color:#cc8880;background:rgba(150,30,20,.1);margin:3px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:20px 0}
+.prow{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.86rem}
+.pk{color:var(--tdim);font-style:italic}.pv{color:var(--thead);text-align:right}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--panel);border:1px solid var(--dim-ember);border-radius:4px;padding:11px 26px;font-family:'Cinzel',serif;font-size:.78rem;color:var(--glow);opacity:0;pointer-events:none;transition:all .3s;z-index:10000;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.quench-msg{font-family:'Cinzel',serif;font-size:.85rem;color:var(--tdim);letter-spacing:.15em;margin-top:20px;animation:textPulse 1.4s ease infinite}
+@keyframes textPulse{0%,100%{opacity:.4}50%{opacity:1}}
+.spinner{width:38px;height:38px;border:2px solid var(--border);border-top-color:var(--ember);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.two-preview{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+@media(max-width:580px){.two-preview{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- ═══════════════════ HOME ═══════════════════ -->
+<div id="screen-home" class="screen active">
+  <canvas id="homeCanvas"></canvas>
+  <div class="home-body">
+    <div class="big-kanji">刀</div>
+    <div class="home-title">FORGE OF THE SAMURAI</div>
+    <div class="home-sub">鍛冶師の道 — The Path of the Swordsmith</div>
+    <div class="home-div"></div>
+    <p class="home-tag">Master the ancient art of tamahagane. Shape steel with fire, wisdom and patience. Every blade carries the soul of its maker.</p>
+    <div class="btn-row">
+      <button class="btn btn-fire btn-lg" onclick="beginJourney()">⚒ Begin Forging</button>
+      <button class="btn btn-gold" onclick="showInv()">📜 Collection</button>
+    </div>
+    <div class="home-stats">
+      <div class="hs"><div class="hs-n">13</div><div class="hs-l">Forge Stages</div></div>
+      <div class="hs"><div class="hs-n">9</div><div class="hs-l">Materials</div></div>
+      <div class="hs"><div class="hs-n">5</div><div class="hs-l">Rarity Tiers</div></div>
+      <div class="hs"><div class="hs-n">∞</div><div class="hs-l">Combinations</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FORGE ═══════════════════ -->
+<div id="screen-forge" class="screen">
+  <nav class="nav">
+    <span class="nav-brand" onclick="ss('screen-home')">鍛刀 FORGE</span>
+    <div class="nav-r">
+      <div class="gold-pill">⬡ <span id="goldNum">500</span> Ryō</div>
+      <button class="btn btn-ghost btn-sm" onclick="if(confirm('Abandon forge?'))ss('screen-home')">✕ Quit</button>
+    </div>
+  </nav>
+  <div class="wrap">
+    <div class="stage-hdr">
+      <div class="prog" id="prog"></div>
+      <div class="stage-title" id="stgTitle">—</div>
+      <div class="stage-sub" id="stgSub">—</div>
+    </div>
+
+    <!-- STAGE 0: CHARACTER -->
+    <div id="s0" class="spanel" style="display:none">
+      <div class="char-wrap">
+        <div class="char-sticky">
+          <div class="char-canvas-box"><canvas id="charCanvas" width="240" height="340"></canvas></div>
+          <div class="char-name" id="cname">Unnamed</div>
+          <div class="char-title" id="ctitle">Wandering Swordsmith</div>
+          <div id="cstyles" style="margin-top:10px;text-align:center;"></div>
+        </div>
+        <div>
+          <div class="panel">
+            <div class="ptitle">Identity</div>
+            <div class="sec-lbl">Name</div>
+            <input type="text" id="cNameIn" placeholder="Your name..." maxlength="22" oninput="uc()">
+            <div class="sec-lbl">Title</div>
+            <select id="cTitleSel" onchange="uc()">
+              <option>Apprentice Swordsmith</option><option>Journeyman Smith</option>
+              <option>Master Swordsmith</option><option>Grand Master</option>
+              <option>Legendary Forge Lord</option><option>Shadow Bladewright</option>
+              <option>Imperial Swordsmith</option><option>Wandering Smith</option>
+            </select>
+            <div class="sec-lbl">Clan / School</div>
+            <select id="cClanSel" onchange="uc()">
+              <option>Sōshū School</option><option>Yamashiro School</option><option>Bizen School</option>
+              <option>Mino School</option><option>Sagami School</option><option>Shadow Clan</option>
+              <option>Dragon House</option><option>Iron Mountain</option><option>Ronin (No School)</option>
+            </select>
+          </div>
+          <div class="panel">
+            <div class="ptitle">Appearance</div>
+            <div class="sec-lbl">Skin Tone</div><div class="swatch-row" id="skinG"></div>
+            <div class="sec-lbl">Hair Style</div><div class="pick-row" id="hairG"></div>
+            <div class="sec-lbl">Hair Color</div><div class="swatch-row" id="hcolG"></div>
+            <div class="sec-lbl">Face Type</div><div class="pick-row" id="faceG"></div>
+          </div>
+          <div class="panel">
+            <div class="ptitle">Armor</div>
+            <div class="sec-lbl">Style</div><div class="pick-row" id="armorG"></div>
+            <div class="sec-lbl">Primary Color</div><div class="swatch-row" id="acolG"></div>
+            <div class="sec-lbl">Accent</div><div class="swatch-row" id="accG"></div>
+          </div>
+          <div class="panel">
+            <div class="ptitle">Fighting Style</div>
+            <div id="styleG" style="display:grid;grid-template-columns:1fr 1fr;gap:9px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 1: MATERIAL -->
+    <div id="s1" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Choose Your Steel</div>
+        <p style="color:var(--tdim);font-style:italic;margin-bottom:18px;font-size:.9rem;">The material is the soul of the blade. Some must be purchased with Ryō.</p>
+        <div class="grid2" id="matGrid"></div>
+      </div>
+      <div class="panel" id="matPrev"><div style="text-align:center;color:var(--tdim);font-style:italic;padding:20px;">Select a material to preview.</div></div>
+    </div>
+
+    <!-- STAGE 2: BLADE SPECS -->
+    <div id="s2" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Blade Type</div>
+        <div class="grid3" id="btypeGrid"></div>
+      </div>
+      <div class="panel"><div class="ptitle">Geometry</div>
+        <div class="two-preview">
+          <div>
+            <div class="sl-wrap"><div class="sl-lbl">Curvature (Sori)<span class="sl-val" id="soriV">0.5</span></div><input type="range" id="soriS" min="0" max="10" value="5" oninput="ubp()"></div>
+            <div class="sl-wrap"><div class="sl-lbl">Kissaki (Tip)<span class="sl-val" id="kisV">Medium</span></div><input type="range" id="kisS" min="0" max="4" value="2" oninput="ubp()"></div>
+            <div class="sl-wrap"><div class="sl-lbl">Mihaba (Width)<span class="sl-val" id="mihV">Standard</span></div><input type="range" id="mihS" min="0" max="4" value="2" oninput="ubp()"></div>
+            <div class="sl-wrap"><div class="sl-lbl">Kasane (Thickness)<span class="sl-val" id="kasV">Standard</span></div><input type="range" id="kasS" min="0" max="4" value="2" oninput="ubp()"></div>
+          </div>
+          <div>
+            <div class="sec-lbl">Preview</div>
+            <canvas id="geomC" width="280" height="180" style="width:100%;background:var(--mid);border-radius:4px;border:1px solid var(--border);"></canvas>
+            <div id="geomStats" style="margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 3: FOLDING -->
+    <div id="s3" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Steel Folding</div>
+        <p style="color:var(--tdim);font-style:italic;margin-bottom:18px;font-size:.9rem;">Each fold doubles the layers, refining grain and removing impurities.</p>
+        <div class="two">
+          <div>
+            <div class="sl-wrap">
+              <div class="sl-lbl">Folds <span class="sl-val" id="foldV">8</span> = <span id="layersV" style="color:var(--tdim)">256 layers</span></div>
+              <input type="range" id="foldS" min="1" max="15" value="8" oninput="ufo()">
+            </div>
+            <div style="margin-top:12px;">
+              <div class="sec-lbl">Brittleness Risk</div>
+              <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:7px;"><div id="britBar" style="height:100%;width:30%;border-radius:4px;background:var(--ru);transition:all .3s"></div></div>
+              <div style="font-size:.78rem;color:var(--tdim);" id="britLbl">Low — standard technique</div>
+            </div>
+            <div style="margin-top:16px;" id="foldStats"></div>
+          </div>
+          <div>
+            <div class="sec-lbl">Layer Visualization</div>
+            <canvas id="foldC" width="260" height="180" style="width:100%;background:var(--mid);border-radius:4px;border:1px solid var(--border);"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 4: FORGING MINI-GAME -->
+    <div id="s4" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">The Forging</div>
+        <p style="color:var(--tdim);font-style:italic;margin-bottom:14px;font-size:.9rem;">Strike while the iron is hot — time your blows in the orange-white sweet zone. Quality is won and lost here.</p>
+        <div class="forge-stage" id="forgeWrap"><canvas id="forgeC" width="800" height="280"></canvas></div>
+        <div class="hud">
+          <div class="hud-box"><div class="hud-lbl">Temperature</div><div class="hud-track"><div class="hud-fill" id="tFill" style="background:linear-gradient(90deg,#ff4400,#ffaa00);width:50%;"></div></div><div class="hud-val" id="tVal">1100°C</div></div>
+          <div class="hud-box"><div class="hud-lbl">Craft Quality</div><div class="hud-track"><div class="hud-fill" id="qFill" style="background:linear-gradient(90deg,#4488cc,#44ddaa);width:50%;"></div></div><div class="hud-val" id="qVal">50%</div></div>
+          <div class="hud-box"><div class="hud-lbl">Strikes Left</div><div class="hud-track"><div class="hud-fill" id="sFill" style="background:linear-gradient(90deg,#aa8800,#ffdd44);width:100%;"></div></div><div class="hud-val" id="sVal">25</div></div>
+        </div>
+        <div class="forge-msg" id="forgeMsg">Heat the metal, strike in the orange-white zone!</div>
+        <div id="flawsDisp" style="display:none;margin-top:11px;"></div>
+      </div>
+    </div>
+
+    <!-- STAGE 5: HAMON -->
+    <div id="s5" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Hamon — Temper Line</div>
+        <p style="color:var(--tdim);font-style:italic;margin-bottom:16px;font-size:.9rem;">The hamon (刃文) is the swordsmith's artistic signature in steel — formed by clay coating before quenching.</p>
+        <div class="hamon-grid" id="hamonGrid"></div>
+      </div>
+      <div class="panel"><div class="ptitle">Nie & Nioi Density</div>
+        <div class="two">
+          <div><div class="sl-wrap"><div class="sl-lbl">Nie Density<span class="sl-val" id="nieV">Medium</span></div><input type="range" id="nieS" min="0" max="4" value="2" oninput="uha()"></div></div>
+          <div><div class="sl-wrap"><div class="sl-lbl">Nioi Brightness<span class="sl-val" id="nioiV">Medium</span></div><input type="range" id="nioiS" min="0" max="4" value="2" oninput="uha()"></div></div>
+        </div>
+        <canvas id="hamonPrev" width="680" height="90" style="width:100%;margin-top:14px;border-radius:4px;border:1px solid var(--border);background:var(--mid);"></canvas>
+      </div>
+    </div>
+
+    <!-- STAGE 6: POLISH -->
+    <div id="s6" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Polish Level</div><div class="grid3" id="polGrid"></div></div>
+      <div class="panel"><div class="ptitle">Surface Finish</div><div class="grid3" id="surfGrid"></div></div>
+    </div>
+
+    <!-- STAGE 7: HI & ENGRAVING -->
+    <div id="s7" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Hi — Blood Groove</div><div class="grid3" id="hiGrid"></div></div>
+      <div class="panel"><div class="ptitle">Horimono — Engraving</div><div class="grid3" id="engGrid"></div></div>
+    </div>
+
+    <!-- STAGE 8: HANDLE -->
+    <div id="s8" class="spanel" style="display:none">
+      <div class="two-preview" style="align-items:start;">
+        <div>
+          <div class="panel"><div class="ptitle">Tsuka Core</div><div class="grid3" id="coreGrid"></div></div>
+          <div class="panel">
+            <div class="ptitle">Ito Wrap</div>
+            <div class="sec-lbl">Material</div><div class="pick-row" id="itoMatG"></div>
+            <div class="sec-lbl">Color</div><div class="swatch-row" id="itoColG"></div>
+            <div class="sec-lbl">Pattern</div><div class="pick-row" id="itoPatG"></div>
+          </div>
+          <div class="panel"><div class="ptitle">Menuki Ornament</div><div class="grid4" id="menukiGrid"></div></div>
+        </div>
+        <div>
+          <div class="panel"><div class="ptitle">Handle Preview</div>
+            <canvas id="handleC" width="280" height="220" style="width:100%;background:var(--mid);border-radius:4px;border:1px solid var(--border);"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 9: GUARD -->
+    <div id="s9" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Tsuba Shape</div><div class="grid3" id="tsubaGrid"></div></div>
+      <div class="panel"><div class="ptitle">Material & Finish</div>
+        <div class="two">
+          <div>
+            <div class="sec-lbl">Material</div><div class="pick-row" id="tsubaMatG"></div>
+            <div class="sec-lbl">Patina</div><div class="pick-row" id="tsubaFinG"></div>
+          </div>
+          <div><canvas id="tsubaC" width="200" height="200" style="width:100%;max-width:200px;background:var(--mid);border-radius:50%;border:1px solid var(--border);margin:0 auto;display:block;"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 10: FITTINGS -->
+    <div id="s10" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Kashira — Pommel</div><div class="grid4" id="kashGrid"></div></div>
+      <div class="panel"><div class="ptitle">Habaki — Blade Collar</div><div class="grid4" id="habGrid"></div></div>
+      <div class="panel"><div class="ptitle">Seppa — Spacers</div><div class="pick-row" id="seppaG"></div></div>
+    </div>
+
+    <!-- STAGE 11: SAYA -->
+    <div id="s11" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Saya Wood</div><div class="grid4" id="sayaWoodG"></div></div>
+      <div class="panel"><div class="ptitle">Lacquer & Sageo</div>
+        <div class="two">
+          <div>
+            <div class="sec-lbl">Style</div><div class="pick-row" id="lacStyleG"></div>
+            <div class="sec-lbl">Color</div><div class="swatch-row" id="lacColG"></div>
+            <div class="sec-lbl">Pattern</div><div class="pick-row" id="lacPatG"></div>
+          </div>
+          <div>
+            <div class="sec-lbl">Sageo (Cord)</div><div class="pick-row" id="sagMatG"></div>
+            <div class="sec-lbl">Cord Color</div><div class="swatch-row" id="sagColG"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGE 12: SIGNATURE -->
+    <div id="s12" class="spanel" style="display:none">
+      <div class="panel"><div class="ptitle">Mei — Signature</div>
+        <div class="two">
+          <div>
+            <div class="sec-lbl">Location</div><div class="pick-row" id="meiLocG"></div>
+            <div class="sec-lbl">Script</div><div class="pick-row" id="meiScrG"></div>
+            <div class="sec-lbl">Inscription</div>
+            <input type="text" id="meiIn" placeholder="Optional custom inscription..." maxlength="28">
+          </div>
+          <div>
+            <div class="sec-lbl">Age</div><div class="pick-row" id="ageG"></div>
+            <div class="sec-lbl">Purpose</div><div class="grid3" id="purposeG"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel"><div class="ptitle">Complete Preview</div>
+        <canvas id="finalC" width="700" height="150" style="width:100%;background:var(--mid);border-radius:4px;border:1px solid var(--border);"></canvas>
+        <div id="finalSum" style="margin-top:18px;"></div>
+      </div>
+    </div>
+
+    <div class="stage-nav" id="stgNav">
+      <button class="btn btn-ghost" id="btnBack" onclick="nav(-1)">← Back</button>
+      <button class="btn btn-fire" id="btnNext" onclick="nav(1)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ REVEAL ═══════════════════ -->
+<div id="screen-reveal" class="screen">
+  <canvas id="revCanvas"></canvas>
+  <div class="rev-body">
+    <div class="rev-phase" id="rp1" style="display:flex;flex-direction:column;align-items:center;">
+      <div style="font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.4em;color:var(--ember);text-transform:uppercase;margin-bottom:22px;">Quenching the Blade</div>
+      <canvas id="quenchC" width="600" height="180" style="max-width:100%;border-radius:5px;border:1px solid var(--border);"></canvas>
+      <div class="quench-msg" id="qMsg">Submerging in water...</div>
+    </div>
+    <div class="rev-phase" id="rp2">
+      <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.45em;color:var(--tdim);text-transform:uppercase;margin-bottom:18px;">The Blade is Named</div>
+      <div class="rev-name" id="revName" style="opacity:0;transition:all 1s;">—</div>
+      <div class="rev-rar" id="revRar">—</div>
+      <div class="rev-sword-wrap"><canvas id="revSwordCanvas" width="680" height="160"></canvas></div>
+    </div>
+    <div class="rev-phase" id="rp3">
+      <div class="rev-name" id="revName3">—</div>
+      <div class="rev-rar" id="revRar3" style="margin-bottom:22px;">—</div>
+      <div class="rev-stats" id="revStats"></div>
+      <div class="rev-val"><div class="rv-lbl">Estimated Market Value</div><div class="rv-amt" id="revValAmt">—</div><div class="rv-u">Ryō</div></div>
+      <div class="rev-char" id="revChar">
+        <canvas id="revCharC" width="110" height="150" style="border-radius:3px;flex-shrink:0;"></canvas>
+        <div class="rev-ci" id="revCI"></div>
+      </div>
+      <div id="revFlaws" style="margin-top:14px;width:100%;max-width:560px;"></div>
+      <div class="btn-row" style="margin-top:28px;">
+        <button class="btn btn-gold btn-lg" onclick="saveAndContinue()">📜 Save to Collection</button>
+        <button class="btn btn-ghost" onclick="listOnMarket()">🏮 List on Market</button>
+        <button class="btn btn-fire" onclick="beginJourney()">⚒ Forge Another</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ INVENTORY ═══════════════════ -->
+<div id="screen-inv" class="screen">
+  <nav class="nav">
+    <span class="nav-brand" onclick="ss('screen-home')">鍛刀 FORGE</span>
+    <div class="nav-r">
+      <div class="gold-pill">⬡ <span id="invGold">500</span> Ryō</div>
+      <button class="btn btn-fire btn-sm" onclick="beginJourney()">⚒ Forge</button>
+      <button class="btn btn-ghost btn-sm" onclick="ss('screen-home')">← Home</button>
+    </div>
+  </nav>
+  <div class="wrap" style="padding-top:80px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
+      <div><div class="stage-title">Collection</div><div class="stage-sub" id="invSub">Your forged blades</div></div>
+      <div style="text-align:right;"><div style="font-family:'Cinzel',serif;font-size:1.4rem;color:var(--gold2);" id="invGoldBig">—</div><div style="font-size:.68rem;letter-spacing:.2em;color:var(--tdim);">TREASURY</div></div>
+    </div>
+    <div class="inv-grid" id="invList"><div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--tdim);font-style:italic;">No swords yet. Begin your first forge.</div></div>
+    <div style="margin-top:36px;"><div class="stage-title" style="font-size:1.1rem;margin-bottom:14px;">Market Listings</div><div id="mktList"><div style="color:var(--tdim);font-style:italic;text-align:center;padding:28px;">No active listings.</div></div></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+const STAGE_INFO=[
+  {t:'Create Your Samurai',s:'Define your identity as a swordsmith. Your character carries the spirit of every blade you forge.'},
+  {t:'Material Selection',s:'Choose the steel that becomes your sword\'s soul. Each ore carries unique properties and history.'},
+  {t:'Blade Specifications',s:'Define the fundamental geometry — length, curvature, width and tip style.'},
+  {t:'Steel Folding',s:'Fold the tamahagane to align the grain, expel impurities and create layered steel of extraordinary quality.'},
+  {t:'The Forging',s:'Strike while the iron is hot. Time your blows in the sweet zone — quality is won and lost here.'},
+  {t:'Hamon — Temper Line',s:'Apply clay before quenching to create the hamon, the artistic boundary between hard edge and soft spine.'},
+  {t:'Polish & Finish',s:'The polisher\'s art reveals what the steel truly is. Choose your finish to bring out the blade\'s character.'},
+  {t:'Hi & Horimono',s:'Add a blood groove for lightness and optional engravings that carry meaning into battle.'},
+  {t:'Tsuka — Handle',s:'Craft the handle — the intimate connection between swordsman and blade.'},
+  {t:'Tsuba — Guard',s:'Design the guard that balances the sword and protects the hand.'},
+  {t:'Fittings',s:'Kashira, habaki and seppa — the finishing metalwork that holds everything together.'},
+  {t:'Saya — Scabbard',s:'The scabbard protects the blade and completes the sword as an object of beauty.'},
+  {t:'Signature & Provenance',s:'Sign your work and define the blade\'s purpose. A signed sword carries the swordsmith\'s legacy.'}
+];
+
+const MATERIALS=[
+  {id:'tama',name:'Iron Sand (Tamahagane)',sub:'伝統的な玉鋼',r:'common',cost:0,ul:true,desc:'Smelted from river iron sand in the tatara furnace over 72 hours. Authentic heart of Japanese swordmaking since the 8th century.',stats:{sharpness:55,durability:60,flexibility:65,mystique:25},bon:['Authentic grain','Superior hamon','Traditional bonus'],mal:['Lower peak sharpness'],gc:'#cc9966',bv:200,df:drawTama},
+  {id:'carbon',name:'High Carbon Steel',sub:'高炭素鋼',r:'uncommon',cost:80,ul:true,desc:'Modern steel with precisely controlled carbon content. Predictable, reliable and capable of exceptional sharpness.',stats:{sharpness:72,durability:68,flexibility:48,mystique:10},bon:['High sharpness ceiling','Edge retention'],mal:['Lower flexibility'],gc:'#b8ccd8',bv:280,df:drawCarbon},
+  {id:'shogun',name:'Shogun Reserve Tamahagane',sub:'将軍家御用鋼',r:'rare',cost:350,ul:true,desc:'Ultra-refined traditional tamahagane, triple-processed with hand-selected iron sand. Commissioned by shogunates for generations.',stats:{sharpness:68,durability:72,flexibility:72,mystique:55},bon:['Exceptional hamon','Prestige bonus','Superior grain','Historical lineage'],mal:['Very expensive'],gc:'#d4a836',bv:800,df:drawShogun},
+  {id:'volcanic',name:'Volcanic Black Steel',sub:'火山黒鋼',r:'rare',cost:420,ul:true,desc:'Steel from volcanic ore infused with trace minerals during millennia of heat. Distinctive black sheen and exceptional heat resistance.',stats:{sharpness:65,durability:80,flexibility:55,mystique:60},bon:['Superior durability','Heat hardness','Distinctive look'],mal:['Reduced flexibility'],gc:'#ff4400',bv:750,df:drawVolcanic},
+  {id:'ghost',name:'Ghost Silver',sub:'幽霊銀',r:'epic',cost:800,ul:false,desc:'An alloy of ultra-refined steel and rare iridescent minerals. The blade appears nearly invisible in low light. Legendary for assassination and ceremony.',stats:{sharpness:85,durability:55,flexibility:75,mystique:80},bon:['Near-invisible edge','Maximum sharpness','Legendary appearance'],mal:['Lower durability','Brittle under heavy strikes'],gc:'#c8e8ff',bv:2400,df:drawGhost},
+  {id:'blood',name:'Blood Jade Steel',sub:'血玉鋼',r:'epic',cost:1000,ul:false,desc:'A steel with deep crimson tint from blood-red jade mineral inclusions. Said to hunger for battle — the edge never fully dulls.',stats:{sharpness:80,durability:65,flexibility:68,mystique:90},bon:['Crimson hamon','Edge hunger bonus','Legendary appearance'],mal:['Increased brittleness','Dark reputation'],gc:'#cc1111',bv:2800,df:drawBlood},
+  {id:'dragon',name:'Dragon Bone Alloy',sub:'龍骨合金',r:'legendary',cost:2500,ul:false,desc:'The rarest alloy known. Forged from calcified mineral deposits thought to be dragon bones combined with the purest tamahagane.',stats:{sharpness:88,durability:82,flexibility:85,mystique:95},bon:['Maximum stats','Dragon-scale hamon','Cannot gain folding flaws'],mal:['Extremely expensive'],gc:'#f0c860',bv:8000,df:drawDragon},
+  {id:'meteor',name:'Meteor Iron',sub:'天鉄 — Celestial Steel',r:'legendary',cost:3500,ul:false,desc:'Forged from iron meteorite with a crystalline structure found nowhere on Earth. Creates Widmanstätten patterns in the finished blade.',stats:{sharpness:82,durability:90,flexibility:78,mystique:100},bon:['Cosmic crystal pattern','Maximum durability','Truly unique appearance'],mal:['Extremely rare','High fold risk'],gc:'#8899cc',bv:12000,df:drawMeteor},
+  {id:'shadow',name:'Shadow Ore',sub:'影鉱石 — Void Metal',r:'mythic',cost:5000,ul:false,desc:'An ore of unknown origin that seems to absorb light. No geology explains its existence. Swordsmiths who work it describe visions. Produces blades of unnatural power.',stats:{sharpness:95,durability:75,flexibility:90,mystique:100},bon:['Reality-bending sharpness','Void absorption','Maximum mystique'],mal:['Unstable folding','Unpredictable effects'],gc:'#8844cc',bv:20000,df:drawShadow}
+];
+
+const BLADE_TYPES=[
+  {id:'tanto',name:'Tantō',sub:'短刀',desc:'Short blade 15-30cm. Close combat and ritual use.',len:25,mods:{sharpness:+8,durability:-5,flexibility:+5},vm:.7},
+  {id:'waki',name:'Wakizashi',sub:'脇差',desc:'Companion sword 30-60cm. Versatile indoors.',len:50,mods:{sharpness:+5,durability:0,flexibility:+3},vm:.85},
+  {id:'katana',name:'Katana',sub:'刀',desc:'The iconic samurai sword 60-73cm. Perfect balance.',len:70,mods:{sharpness:+3,durability:+3,flexibility:+3},vm:1.0},
+  {id:'tachi',name:'Tachi',sub:'太刀',desc:'Longer sword 75-80cm, worn edge-down. Elegant cavalry weapon.',len:78,mods:{sharpness:+2,durability:+5,flexibility:+5},vm:1.15},
+  {id:'nodachi',name:'Nodachi',sub:'野太刀',desc:'Massive two-handed field sword 90-120cm.',len:110,mods:{sharpness:-3,durability:+12,flexibility:-8},vm:1.2},
+  {id:'odachi',name:'Ōdachi',sub:'大太刀',desc:'The great sword of feudal Japan over 150cm.',len:160,mods:{sharpness:-8,durability:+18,flexibility:-15},vm:1.8}
+];
+
+const HAMONS=[
+  {id:'suguha',name:'Suguha',sub:'直刃',desc:'Straight, even temper line. Classical refinement.'},
+  {id:'notare',name:'Notare',sub:'のたれ',desc:'Gently undulating waves. Calm and majestic.'},
+  {id:'gunome',name:'Gunome',sub:'互の目',desc:'Repeating semicircular patterns. Dynamic energy.'},
+  {id:'choji',name:'Chōji',sub:'丁子',desc:'Clove-flower shapes. Highly decorative Bizen style.'},
+  {id:'hitatsura',name:'Hitatsura',sub:'皆焼き',desc:'Temper marks across entire blade. Wild and legendary.'},
+  {id:'toranba',name:'Tōranba',sub:'涛乱刃',desc:'Crashing wave patterns. Mark of a true master.'}
+];
+
+const POLISH=[
+  {id:'rough',name:'Rough Finish',desc:'Raw forge finish. Aggressive character.',mods:{sharpness:-10,mystique:-5}},
+  {id:'basic',name:'Basic Polish',desc:'Functional working finish.',mods:{sharpness:0,mystique:0}},
+  {id:'sashikomi',name:'Sashikomi Polish',desc:'Traditional working polish. Balance of function and aesthetics.',mods:{sharpness:+3,mystique:+8}},
+  {id:'hadori',name:'Hadori Polish',desc:'Expert polish revealing jigane texture.',mods:{sharpness:+5,mystique:+15}},
+  {id:'nugui',name:'Nugui Master Polish',desc:'Highest traditional level. Every crystal visible.',mods:{sharpness:+8,mystique:+25}}
+];
+
+const SURFACES=[
+  {id:'natural',name:'Natural Jigane',desc:'True steel surface, untreated.'},
+  {id:'kasumi',name:'Kasumi',desc:'Misty frost. Highlights hamon contrast.'},
+  {id:'mirror',name:'Migaki Mirror',desc:'Mirror-bright polish on flat.'},
+  {id:'brushed',name:'Brushed Grain',desc:'Directional brush reveals grain.'},
+  {id:'satin',name:'Satin Oil',desc:'Oil-finished satin sheen.'}
+];
+
+const HI=[
+  {id:'none',name:'No Hi',desc:'Full blade section. Maximum weight.'},
+  {id:'bohi',name:'Bo-Hi',sub:'棒樋',desc:'Single full-length groove. -30% weight, adds whistle.'},
+  {id:'futasuji',name:'Futasuji-Hi',sub:'二筋樋',desc:'Two parallel grooves. Maximum weight reduction.'},
+  {id:'shobuhi',name:'Shobu-Hi',sub:'菖蒲樋',desc:'Short upper groove. Minimal change, decorative.'},
+  {id:'koshi',name:'Koshi-Hi',sub:'腰樋',desc:'Groove near handle only.'}
+];
+
+const ENGRAVINGS=[
+  {id:'none',name:'No Engraving',desc:'Pure blade, unadulterated.'},
+  {id:'kurikara',name:'Kurikara Dragon',sub:'倶利伽羅',desc:'Dragon coiling around a sword. Most iconic.'},
+  {id:'gomabashi',name:'Gomabashi',sub:'護摩箸',desc:'Ritual stick pattern. Buddhist significance.'},
+  {id:'sanskrit',name:'Sanskrit Prayer',sub:'梵字',desc:'Sacred Bonji script blessings.'},
+  {id:'plum',name:'Plum Blossom',sub:'梅花',desc:'Endurance through adversity.'},
+  {id:'dragon',name:'Full Dragon',sub:'龍',desc:'Elaborate full-length rising dragon.'}
+];
+
+const TSUKA_CORES=[
+  {id:'honoki',name:'Honoki Magnolia',desc:'Traditional core. Light, strong, ideal.'},
+  {id:'ebony',name:'Black Ebony',desc:'Dense black wood. Extremely durable.'},
+  {id:'bamboo',name:'Laminated Bamboo',desc:'Flexible shock absorption.'}
+];
+
+const ITO_MATS=['Silk','Cotton','Leather','Synthetic Fiber'];
+const ITO_PATS=['Standard Diamond','Tight Diamond','Spiral','Flat Wrap','Battle Wrap'];
+
+const ITO_COLORS=[
+  {n:'Obsidian',c:'#111'},{n:'Ivory',c:'#fffff0'},{n:'Crimson',c:'#8b0000'},
+  {n:'Indigo',c:'#1a237e'},{n:'Forest',c:'#1b5e20'},{n:'Gold',c:'#b7950b'},
+  {n:'Purple',c:'#4a148c'},{n:'Charcoal',c:'#424242'},{n:'Rust',c:'#7a2900'},
+  {n:'Teal',c:'#006064'},{n:'Sage',c:'#558b2f'},{n:'Midnight',c:'#0d0d2b'}
+];
+
+const MENUKIS=[
+  {id:'crane',name:'Cranes',desc:'Longevity and fortune.'},
+  {id:'dragon',name:'Dragon',desc:'Power and divine protection.'},
+  {id:'phoenix',name:'Phoenix',desc:'Rebirth and transformation.'},
+  {id:'tiger',name:'Tiger',desc:'Ferocity and courage.'},
+  {id:'chrysanthemum',name:'Chrysanthemum',desc:'Imperial flower.'},
+  {id:'none',name:'Plain',desc:'Austere tradition.'}
+];
+
+const TSUBA_SHAPES=[
+  {id:'maru',name:'Round (Maru)',desc:'Classic circular. Most traditional.'},
+  {id:'kaku',name:'Square (Kaku)',desc:'Geometric elegance.'},
+  {id:'mokko',name:'Four-Lobed (Mokko)',desc:'Flower-shaped. Decorative.'},
+  {id:'shobu',name:'Iris (Shōbu)',desc:'Iris leaf silhouette.'},
+  {id:'aoi',name:'Hollyhock (Aoi)',desc:'Tokugawa family flower.'},
+  {id:'wave',name:'Wave (Nami)',desc:'Dynamic irregular edge.'}
+];
+
+const TSUBA_MATS=['Iron (Tetsu)','Shakudō Alloy','Shibuichi','Brass (Shinchū)','Silver','Gold-inlaid Iron'];
+const TSUBA_FINS=['Natural Rust','Blackened','Polished Bright','Patinated Bronze','Gold Wash'];
+
+const KASHIRAS=[
+  {id:'iron',name:'Iron Kashira',desc:'Traditional iron pommel.'},
+  {id:'shakudo',name:'Shakudō',desc:'Dark copper-gold alloy.'},
+  {id:'horn',name:'Buffalo Horn',desc:'Polished natural warmth.'},
+  {id:'dragon',name:'Dragon Head',desc:'Dramatic statement piece.'}
+];
+
+const HABAKIS=[
+  {id:'copper',name:'Copper',desc:'Traditional. Standard and reliable.'},
+  {id:'silver',name:'Silver',desc:'Prestigious fit.'},
+  {id:'gold_wash',name:'Gold-Washed Copper',desc:'Elegant and traditional.'},
+  {id:'shakudo',name:'Shakudō',desc:'Black-gold alloy. Prestigious.'}
+];
+
+const SEPPAS=['Standard Iron','Copper','Silver','Decorative Brass'];
+
+const SAYA_WOODS=[
+  {id:'honoki',name:'Honoki Magnolia',desc:'Traditional. Perfect fit and moisture protection.'},
+  {id:'keyaki',name:'Zelkova (Keyaki)',desc:'Beautiful grain. Prestigious.'},
+  {id:'ebony',name:'Black Ebony',desc:'Dense and durable.'},
+  {id:'rosewood',name:'Rosewood',desc:'Rich reddish-brown. Aromatic.'}
+];
+
+const LAC_STYLES=['Solid Color','Matte Finish','Gloss High-Shine','Nashiji (Pear Skin)','Togidashi (Polished)'];
+
+const LAC_COLORS=[
+  {n:'Urushi Black',c:'#0a0808'},{n:'Vermilion',c:'#c0392b'},{n:'Persimmon',c:'#d35400'},
+  {n:'Indigo',c:'#1a237e'},{n:'Forest',c:'#1b5e20'},{n:'Natural Wood',c:'#8b6914'},
+  {n:'White',c:'#f5f5f5'},{n:'Deep Purple',c:'#4a148c'},{n:'Ocean Blue',c:'#006064'},
+  {n:'Silver',c:'#9e9e9e'},{n:'Gold',c:'#b7950b'},{n:'Ash Grey',c:'#424242'}
+];
+
+const LAC_PATS=['Plain','Gold Flake (Nashiji)','Geometric Inlay','Floral Motif','Wave Pattern','Dragon Scales'];
+const SAG_MATS=['Silk Braid','Cotton Braid','Hemp Cord','Leather Strip'];
+
+const MEI_LOCS=['Omote (front)','Ura (back)','Both sides','None'];
+const MEI_SCRIPS=['Kanji','Katakana','Seal Script','Stylized'];
+const AGES=['New — This Season','One Year','Five Years Aged','Antique (50yr)','Ancient (200yr+)'];
+
+const PURPOSES=[
+  {id:'combat',name:'Battle Sword',desc:'Optimized for warfare.'},
+  {id:'iaido',name:'Iaido Practice',desc:'Smooth draw and ceremony.'},
+  {id:'ceremonial',name:'Ceremonial',desc:'Display and ritual.'},
+  {id:'heirloom',name:'Heirloom',desc:'Built to last generations.'},
+  {id:'gift',name:'Imperial Gift',desc:'For a lord or emperor.'}
+];
+
+const STYLES=[
+  {id:'niten',name:'Niten Ichi-ryū',desc:'Two-sword school of Musashi. +Sharpness +Flexibility',bon:{sharpness:8,flexibility:5}},
+  {id:'kenjutsu',name:'Kenjutsu Orthodox',desc:'Traditional school. Balanced in all.',bon:{sharpness:3,durability:3,flexibility:3}},
+  {id:'itto',name:'Ittō-ryū',desc:'Single decisive strikes. +Durability',bon:{durability:10,sharpness:5}},
+  {id:'hyoho',name:'Hyōhō Niten',desc:'Strategy school. Masters of control.',bon:{flexibility:10,mystique:8}},
+  {id:'shinkage',name:'Shinkage-ryū',desc:'Mind-shadow school. Spirit and timing.',bon:{mystique:15,flexibility:6}},
+  {id:'musha',name:'Musha-dō',desc:'Warrior way. Pure combat power.',bon:{durability:8,sharpness:8}}
+];
+
+const HAIRS=['Chonmage','Samurai Knot','Loose','Shaved','Warrior Braid','Long Tied','Topknot','Close-cropped'];
+const FACES=['Strong Jaw','Narrow','Aged','Young','Scarred','Round'];
+const ARMORS=['Ō-yoroi','Dō-maru','Haramaki','Tōsei-gusoku','Lamellar','Forge Robe'];
+const SKIN_T=[{n:'Pale',c:'#f5d0a9'},{n:'Fair',c:'#d4a76a'},{n:'Medium',c:'#b8864c'},{n:'Tan',c:'#9a6b3a'},{n:'Bronze',c:'#7a4f28'},{n:'Deep',c:'#5a3218'}];
+const HAIR_C=[{n:'Black',c:'#111'},{n:'Dark Brown',c:'#3d2000'},{n:'Brown',c:'#6b3a00'},{n:'Auburn',c:'#8b2500'},{n:'Grey',c:'#808080'},{n:'White',c:'#e8e8e8'},{n:'Silver',c:'#aaaacc'},{n:'Raven',c:'#1a0a1a'}];
+const ARMOR_C=[{n:'Obsidian',c:'#111'},{n:'Crimson',c:'#7a0000'},{n:'Indigo',c:'#1a237e'},{n:'Forest',c:'#1b4e20'},{n:'Bronze',c:'#7a4a00'},{n:'Pearl',c:'#e8e8e0'},{n:'Storm',c:'#455a64'},{n:'Gold',c:'#b59410'}];
+const ACCENT_C=[{n:'Gold',c:'#d4a836'},{n:'Silver',c:'#c0c0c0'},{n:'Red',c:'#cc0000'},{n:'White',c:'#fff'},{n:'Green',c:'#2e7d32'},{n:'Purple',c:'#6a1b9a'},{n:'Copper',c:'#b87333'},{n:'Black',c:'#111'}];
+
+const NP_A=['Kuro','Shiro','Hi','Tsuki','Kaze','Yami','Homura','Ryū','Oni','Sora','Umi','Mizu','Tetsu','Mugen','Shin'];
+const NP_B=['Ha','Ken','Maru','Kiri','Zan','Fu','Chi','Kage','Getsu','Giri','Mai','Dō','Jin','Sen'];
+const NP_S=['no Ken','no Katana','Maru','Giri','Kaze','Zan','no Kami','Ryu','no Oni','Ichi'];
+const BUYERS=['Tokugawa Clan','Osaka Merchant Guild','Edo Shogunate','Mountain Temple','Traveling Daimyo','Secret Order','Imperial Court','Ronin Brotherhood','Sea Trader','Shrine Keeper'];
+const FLAW_T=['Hairline Crack','Surface Pit','Uneven Edge','Weak Fold','Cold Shut','Scale Inclusion','Warped Tang','Stress Fracture','Irregular Grain','Brittle Zone'];
+
+// ══════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════
+let G={gold:500,stage:0,inv:[],market:[],char:{name:'',title:'Apprentice Swordsmith',clan:'Sōshū School',skin:0,hair:0,hcol:0,face:0,armor:0,acol:0,acc:1,style:'kenjutsu'},sword:{}};
+let FA={temp:700,quality:50,strikes:25,cooling:false,sparks:[],hamY:40,done:false,iv:null,flaws:[]};
+let hAnimId=null, revAnimId=null;
+let currentSword=null;
+
+function swordDefault(){return{material:null,bladeType:null,sori:5,kissaki:2,mihaba:2,kasane:2,folds:8,quality:50,flaws:[],hamon:null,nie:2,nioi:2,polish:null,surface:null,hi:null,engraving:null,tsukaCore:null,itoMat:0,itoCol:0,itoPat:0,menuki:null,tsubaShape:null,tsubaMat:0,tsubaFin:0,kashira:null,habaki:null,seppa:0,sayaWood:null,lacStyle:0,lacCol:0,lacPat:0,sagMat:0,sagCol:0,meiLoc:0,meiScr:0,meiText:'',age:0,purpose:null};}
+
+// ══════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+function ss(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0);}
+function toast(m,d=2600){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function rand(a,b){return a+(b-a)*Math.random();}
+function ri(a,b){return Math.floor(rand(a,b+1));}
+function rItem(a){return a[ri(0,a.length-1)];}
+function lhx(hex,amt){let r=parseInt(hex.slice(1,3),16)||0,g=parseInt(hex.slice(3,5),16)||0,b=parseInt(hex.slice(5,7),16)||0;r=clamp(r+amt,0,255);g=clamp(g+amt,0,255);b=clamp(b+amt,0,255);return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+function rcol(r){return{common:'var(--rc)',uncommon:'var(--ru)',rare:'var(--rr)',epic:'var(--re)',legendary:'var(--rl)',mythic:'var(--rm)'}[r]||'var(--rc)';}
+function rcls(r){return{common:'rc',uncommon:'ru',rare:'rr',epic:'re',legendary:'rl',mythic:'rm'}[r]||'rc';}
+function rglow(r){return{common:'rgba(138,158,176,.35)',uncommon:'rgba(76,175,80,.4)',rare:'rgba(41,121,255,.45)',epic:'rgba(156,39,176,.5)',legendary:'rgba(255,152,0,.6)',mythic:'rgba(255,23,68,.6)'}[r]||'rgba(138,158,176,.3)';}
+function ug(){$('goldNum').textContent=G.gold.toLocaleString();const i=$('invGold');if(i)i.textContent=G.gold.toLocaleString();const ib=$('invGoldBig');if(ib)ib.textContent=G.gold.toLocaleString()+' Ryō';}
+
+// ══════════════════════════════════════════════════════
+//  MATERIAL TEXTURE DRAWERS
+// ══════════════════════════════════════════════════════
+function drawTex(fn,ctx,w,h){ctx.clearRect(0,0,w,h);fn(ctx,w,h);}
+function drawTama(ctx,w,h){ctx.fillStyle='#3a3028';ctx.fillRect(0,0,w,h);for(let i=0;i<50;i++){const y=rand(0,h);ctx.strokeStyle=`rgba(${ri(70,120)},${ri(55,90)},${ri(35,65)},.4)`;ctx.lineWidth=rand(.5,2);ctx.beginPath();ctx.moveTo(0,y);ctx.bezierCurveTo(w*.3,y+rand(-10,10),w*.7,y+rand(-10,10),w,y+rand(-6,6));ctx.stroke();}for(let i=0;i<180;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`rgba(${ri(60,130)},${ri(50,95)},${ri(30,65)},${rand(.1,.3)})`;ctx.beginPath();ctx.arc(x,y,rand(.5,2),0,Math.PI*2);ctx.fill();}const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(200,155,105,.15)');g.addColorStop(1,'rgba(0,0,0,.3)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawCarbon(ctx,w,h){ctx.fillStyle='#4a5a66';ctx.fillRect(0,0,w,h);for(let i=0;i<70;i++){const x=rand(0,w),y=rand(0,h);ctx.strokeStyle=`rgba(${ri(180,255)},${ri(200,255)},${ri(220,255)},${rand(.04,.2)})`;ctx.lineWidth=rand(.3,1.2);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand(-22,22),y+rand(-22,22));ctx.stroke();}const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'rgba(255,255,255,.18)');g.addColorStop(1,'rgba(0,0,0,.2)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawShogun(ctx,w,h){ctx.fillStyle='#2c2010';ctx.fillRect(0,0,w,h);for(let i=0;i<90;i++){const y=rand(0,h);ctx.strokeStyle=`rgba(${ri(170,220)},${ri(135,180)},${ri(75,115)},${rand(.1,.4)})`;ctx.lineWidth=rand(.5,2);ctx.beginPath();ctx.moveTo(0,y);ctx.bezierCurveTo(w*.25,y+rand(-14,14),w*.75,y+rand(-14,14),w,y+rand(-8,8));ctx.stroke();}for(let i=0;i<30;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`rgba(220,175,75,${rand(.3,.8)})`;ctx.beginPath();ctx.arc(x,y,rand(.5,2.2),0,Math.PI*2);ctx.fill();}const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(220,175,75,.2)');g.addColorStop(1,'rgba(100,60,20,.3)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawVolcanic(ctx,w,h){ctx.fillStyle='#0a0a0a';ctx.fillRect(0,0,w,h);for(let i=0;i<20;i++){const x=rand(0,w),y=rand(0,h);ctx.strokeStyle=`rgba(${ri(200,255)},${ri(60,120)},0,${rand(.3,.8)})`;ctx.lineWidth=rand(.5,2);ctx.beginPath();ctx.moveTo(x,y);let cx=x,cy=y;for(let s=0;s<5;s++){cx+=rand(-20,20);cy+=rand(-15,15);ctx.lineTo(cx,cy);}ctx.stroke();}for(let i=0;i<90;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`rgba(${ri(100,200)},${ri(20,60)},0,${rand(.1,.5)})`;ctx.beginPath();ctx.arc(x,y,rand(.5,3),0,Math.PI*2);ctx.fill();}const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(255,100,20,.1)');g.addColorStop(1,'rgba(0,0,0,.4)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawGhost(ctx,w,h){ctx.fillStyle='#1a2430';ctx.fillRect(0,0,w,h);for(let i=0;i<110;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`hsla(${rand(180,280)},80%,${rand(70,95)}%,${rand(.03,.14)})`;ctx.beginPath();ctx.arc(x,y,rand(.5,4),0,Math.PI*2);ctx.fill();}for(let i=0;i<40;i++){const y=rand(-h,h*2);ctx.strokeStyle=`rgba(200,230,255,${rand(.02,.1)})`;ctx.lineWidth=rand(1,4);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y-rand(20,80));ctx.stroke();}const g=ctx.createLinearGradient(0,0,w,0);g.addColorStop(0,'rgba(180,220,255,.15)');g.addColorStop(.5,'rgba(255,255,255,.24)');g.addColorStop(1,'rgba(180,200,255,.1)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawBlood(ctx,w,h){ctx.fillStyle='#1a0808';ctx.fillRect(0,0,w,h);for(let i=0;i<60;i++){const y=rand(0,h);ctx.strokeStyle=`rgba(${ri(120,180)},${ri(0,30)},${ri(0,20)},${rand(.2,.5)})`;ctx.lineWidth=rand(1,3);ctx.beginPath();ctx.moveTo(0,y);ctx.bezierCurveTo(w*.3,y+rand(-15,15),w*.7,y+rand(-15,15),w,y+rand(-10,10));ctx.stroke();}for(let i=0;i<14;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`rgba(20,${ri(80,150)},${ri(40,80)},${rand(.4,.8)})`;ctx.beginPath();ctx.ellipse(x,y,rand(3,10),rand(2,6),rand(0,Math.PI),0,Math.PI*2);ctx.fill();}const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(180,20,20,.2)');g.addColorStop(1,'rgba(50,0,0,.3)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawDragon(ctx,w,h){ctx.fillStyle='#2a2010';ctx.fillRect(0,0,w,h);const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,'rgba(240,225,195,.12)');g.addColorStop(1,'rgba(100,80,40,.15)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);for(let i=0;i<25;i++){ctx.strokeStyle=`rgba(${ri(200,255)},${ri(155,215)},${ri(55,115)},${rand(.3,.7)})`;ctx.lineWidth=rand(.5,2.5);ctx.beginPath();let cx=rand(0,w),cy=rand(0,h);ctx.moveTo(cx,cy);for(let s=0;s<4;s++){cx+=rand(-30,30);cy+=rand(-20,20);ctx.lineTo(cx,cy);}ctx.stroke();}for(let yi=0;yi<h;yi+=12)for(let xi=0;xi<w;xi+=10){ctx.strokeStyle='rgba(200,175,115,.05)';ctx.lineWidth=.5;ctx.beginPath();ctx.arc(xi+(yi%20>10?5:0),yi,5,0,Math.PI);ctx.stroke();}}
+function drawMeteor(ctx,w,h){ctx.fillStyle='#0c1020';ctx.fillRect(0,0,w,h);[0,60,120,180,240,300].forEach(a=>{const rad=a*Math.PI/180;for(let i=-w;i<w+h;i+=rand(12,22)){ctx.strokeStyle=`rgba(${ri(120,185)},${ri(140,205)},${ri(180,245)},${rand(.08,.28)})`;ctx.lineWidth=rand(.5,1.8);ctx.beginPath();ctx.moveTo(w/2+Math.cos(rad)*i+Math.sin(rad)*(-h),h/2+Math.sin(rad)*i-Math.cos(rad)*(-h));ctx.lineTo(w/2+Math.cos(rad)*i+Math.sin(rad)*(h),h/2+Math.sin(rad)*i-Math.cos(rad)*(h));ctx.stroke();}});for(let i=0;i<80;i++){const x=rand(0,w),y=rand(0,h);ctx.fillStyle=`rgba(200,220,255,${rand(.3,.9)})`;ctx.beginPath();ctx.arc(x,y,rand(.3,1.5),0,Math.PI*2);ctx.fill();}const g=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w/2);g.addColorStop(0,'rgba(120,140,200,.15)');g.addColorStop(1,'rgba(0,0,0,.2)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+function drawShadow(ctx,w,h){ctx.fillStyle='#050208';ctx.fillRect(0,0,w,h);for(let i=0;i<40;i++){const x=rand(0,w),y=rand(0,h);const g=ctx.createRadialGradient(x,y,0,x,y,rand(10,40));g.addColorStop(0,`rgba(${ri(80,140)},0,${ri(100,180)},${rand(.05,.2)})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}for(let i=0;i<15;i++){ctx.strokeStyle=`rgba(${ri(100,200)},0,${ri(150,255)},${rand(.2,.5)})`;ctx.lineWidth=rand(.3,1.5);ctx.beginPath();const sx=rand(0,w),sy=rand(0,h);ctx.moveTo(sx,sy);ctx.lineTo(sx+rand(-40,40),sy+rand(-30,30));ctx.stroke();}}
+
+// ══════════════════════════════════════════════════════
+//  CHARACTER DRAWING
+// ══════════════════════════════════════════════════════
+function drawChar(canvas,cfg,mini=false){
+  if(!canvas)return;
+  const w=canvas.width,h=canvas.height;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  const bg=ctx.createRadialGradient(w/2,h*.6,0,w/2,h/2,w*.9);
+  bg.addColorStop(0,'rgba(28,18,10,.95)');bg.addColorStop(1,'rgba(5,4,4,0)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  const cx=w/2;
+  const skin=SKIN_T[cfg.skin]?.c||'#d4a76a';
+  const hair=HAIR_C[cfg.hcol]?.c||'#111';
+  const armor=ARMOR_C[cfg.acol]?.c||'#111';
+  const acc=ACCENT_C[cfg.acc]?.c||'#d4a836';
+  const armorStyle=ARMORS[cfg.armor]||'Ō-yoroi';
+  const bW=w*.38,bH=h*.38,by=h*.44;
+  // Shadow
+  const shad=ctx.createRadialGradient(cx,h*.93,0,cx,h*.93,70);
+  shad.addColorStop(0,'rgba(0,0,0,.55)');shad.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=shad;ctx.fillRect(0,h*.82,w,h*.18);
+  // Legs
+  ctx.fillStyle=lhx(armor,-20);
+  ctx.fillRect(cx-bW*.28,by+bH*.72,bW*.23,bH*.34);
+  ctx.fillRect(cx+bW*.05,by+bH*.72,bW*.23,bH*.34);
+  // Torso
+  const tg=ctx.createLinearGradient(cx-bW/2,by,cx+bW/2,by+bH*.7);
+  tg.addColorStop(0,lhx(armor,22));tg.addColorStop(1,lhx(armor,-32));
+  ctx.fillStyle=tg;
+  rRect(ctx,cx-bW/2,by,bW,bH*.7,10);ctx.fill();
+  if(armorStyle!=='Forge Robe'){
+    for(let row=0;row<4;row++)for(let col=0;col<5;col++){
+      const px=cx-bW/2+col*(bW/5)+2,py=by+row*(bH*.7/4)+2;
+      ctx.fillStyle=lhx(armor,row%2===0?14:-14);
+      rRect(ctx,px,py,bW/5-4,bH*.7/4-4,3);ctx.fill();
+      ctx.strokeStyle=acc;ctx.globalAlpha=.25;ctx.lineWidth=1;rRect(ctx,px,py,bW/5-4,bH*.7/4-4,3);ctx.stroke();ctx.globalAlpha=1;
+    }
+  } else {
+    ctx.fillStyle='#2a1a0a';rRect(ctx,cx-bW/2,by,bW,bH*.7,4);ctx.fill();
+    ctx.strokeStyle=acc;ctx.globalAlpha=.45;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,by);ctx.lineTo(cx,by+bH*.7);ctx.stroke();ctx.globalAlpha=1;
+  }
+  // Shoulders
+  [cx-bW/2+4,cx+bW/2-4].forEach(sx=>{ctx.fillStyle=lhx(armor,12);ctx.beginPath();ctx.arc(sx,by+4,bW*.18,0,Math.PI*2);ctx.fill();ctx.fillStyle=acc;ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(sx,by+4,bW*.18,0,Math.PI);ctx.fill();ctx.globalAlpha=1;});
+  // Arms
+  ctx.fillStyle=lhx(armor,-10);
+  ctx.fillRect(cx-bW/2-16,by+8,20,bH*.54);ctx.fillRect(cx+bW/2-4,by+8,20,bH*.54);
+  // Hands
+  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(cx-bW/2-6,by+bH*.6,9,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(cx+bW/2+14,by+bH*.6,9,0,Math.PI*2);ctx.fill();
+  // Neck
+  ctx.fillStyle=skin;ctx.fillRect(cx-9,by-26,18,30);
+  // Head
+  const hy=h*.15,hr=h*.108;
+  const face=FACES[cfg.face]||'Strong Jaw';
+  ctx.fillStyle=skin;ctx.beginPath();
+  if(face==='Narrow')ctx.ellipse(cx,hy,hr*.64,hr*1.1,0,0,Math.PI*2);
+  else if(face==='Round')ctx.ellipse(cx,hy,hr,hr*.88,0,0,Math.PI*2);
+  else ctx.ellipse(cx,hy,hr*.78,hr,0,0,Math.PI*2);
+  ctx.fill();
+  if(face==='Scarred'){ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx-7,hy-hr*.5);ctx.lineTo(cx+4,hy+hr*.28);ctx.stroke();}
+  // Eyes
+  const eS=hr*.44;
+  [[cx-eS,hy],[cx+eS,hy]].forEach(([ex,ey])=>{ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(ex,ey,5.5,3.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1a0a00';ctx.beginPath();ctx.arc(ex,ey,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(ex+.8,ey-.8,1,0,Math.PI*2);ctx.fill();});
+  ctx.strokeStyle=hair;ctx.lineWidth=1.8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx-eS-6,hy-8);ctx.lineTo(cx-eS+5,hy-10);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(cx+eS-5,hy-10);ctx.lineTo(cx+eS+6,hy-8);ctx.stroke();
+  const my=hy+hr*.44;ctx.strokeStyle=lhx(skin,-30);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(cx-7,my);ctx.quadraticCurveTo(cx,my+2,cx+7,my);ctx.stroke();
+  // Hair
+  const hs=HAIRS[cfg.hair]||'Chonmage';
+  ctx.fillStyle=hair;
+  if(hs==='Chonmage'||hs==='Samurai Knot'){ctx.fillStyle=lhx(skin,-18);ctx.beginPath();ctx.arc(cx,hy,hr*.82,Math.PI,0);ctx.fill();ctx.fillStyle=hair;ctx.beginPath();ctx.arc(cx,hy-hr*.85,hr*.28,0,Math.PI*2);ctx.fill();ctx.fillStyle=lhx(hair,18);ctx.fillRect(cx-4,hy-hr*1.0,8,13);}
+  else if(hs==='Loose'||hs==='Long Tied'){ctx.beginPath();ctx.arc(cx,hy,hr*.88,Math.PI,0);ctx.fill();ctx.fillRect(cx-hr*.88,hy-3,hr*.24,hr*.75);ctx.fillRect(cx+hr*.63,hy-3,hr*.24,hr*.75);}
+  else if(hs==='Topknot'){ctx.beginPath();ctx.arc(cx,hy-3,hr*.86,Math.PI,0);ctx.fill();ctx.beginPath();ctx.arc(cx,hy-hr*.85,hr*.22,0,Math.PI*2);ctx.fill();}
+  else if(hs==='Shaved'){ctx.globalAlpha=.28;ctx.beginPath();ctx.arc(cx,hy,hr*.82,Math.PI*.1,Math.PI*.9);ctx.fill();ctx.globalAlpha=1;}
+  else {ctx.beginPath();ctx.arc(cx,hy,hr*.88,Math.PI,0);ctx.fill();}
+}
+
+function rRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+
+// ══════════════════════════════════════════════════════
+//  SWORD CANVAS DRAWING
+// ══════════════════════════════════════════════════════
+function drawSword(canvas,sw,W,H){
+  if(!canvas)return;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const mat=sw.material||MATERIALS[0];
+  const bt=sw.bladeType||BLADE_TYPES[2];
+  const r=sw.rarity||'common';
+  const sori=(sw.sori||5)/10;
+  ctx.fillStyle='#060402';ctx.fillRect(0,0,W,H);
+  const glw=ctx.createRadialGradient(W*.55,H/2,0,W*.55,H/2,H*1.1);
+  glw.addColorStop(0,rglow(r));glw.addColorStop(1,'transparent');
+  ctx.fillStyle=glw;ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.translate(W*.05,H/2);
+  const tLen=W*.88,bLen=tLen*.66,hLen=tLen*.18;
+  const itoC=ITO_COLORS[sw.itoCol||0]?.c||'#111';
+  const tH=Math.max(6,H*.28);
+  // Handle
+  const hg=ctx.createLinearGradient(0,0,hLen,0);
+  hg.addColorStop(0,lhx(itoC,30));hg.addColorStop(.5,itoC);hg.addColorStop(1,lhx(itoC,-20));
+  ctx.fillStyle=hg;ctx.fillRect(0,-tH/2,hLen,tH);
+  const pat=ITO_PATS[sw.itoPat||0]||'Standard Diamond';
+  ctx.strokeStyle='rgba(255,255,255,.14)';ctx.lineWidth=1;
+  if(pat.includes('Diamond')){for(let x=6;x<hLen-4;x+=10){ctx.beginPath();ctx.moveTo(x,-tH/2);ctx.lineTo(x+5,0);ctx.lineTo(x,-tH/2+5);ctx.stroke();ctx.beginPath();ctx.moveTo(x,tH/2);ctx.lineTo(x+5,0);ctx.lineTo(x,tH/2-5);ctx.stroke();}}
+  else if(pat.includes('Spiral')){for(let x=4;x<hLen-4;x+=7){ctx.beginPath();ctx.moveTo(x,-tH/2);ctx.lineTo(x+4,tH/2);ctx.stroke();}}
+  // Kashira
+  ctx.fillStyle='#1a1a1a';ctx.beginPath();ctx.ellipse(4,0,6,tH/2+3,0,0,Math.PI*2);ctx.fill();
+  // Habaki
+  const hbk=hLen+4;
+  const hbkC=sw.habaki?.id==='silver'?'#aaa':sw.habaki?.id==='shakudo'?'#2a1808':'#8b6914';
+  ctx.fillStyle=hbkC;ctx.fillRect(hbk,-tH/2-2,10,tH+4);
+  // Tsuba
+  const tbX=hbk+10+4,tbH=H*.68,tbW=14;
+  const tbMat=TSUBA_MATS[sw.tsubaMat||0]||'Iron';
+  const tbC=tbMat.includes('Shakud')?'#1a1208':tbMat.includes('Brass')?'#8b7000':tbMat.includes('Silver')?'#909090':'#2a2a2a';
+  const tbShape=sw.tsubaShape?.id||'maru';
+  ctx.fillStyle=tbC;
+  if(tbShape==='maru'){ctx.beginPath();ctx.ellipse(tbX+tbW/2,0,tbW/2,tbH/2,0,0,Math.PI*2);ctx.fill();}
+  else if(tbShape==='kaku'){ctx.fillRect(tbX,-tbH/2,tbW,tbH);}
+  else{ctx.beginPath();ctx.ellipse(tbX+tbW/2,0,tbW/2,tbH/2,0,0,Math.PI*2);ctx.fill();}
+  ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;ctx.stroke();
+  // Blade
+  const bX=tbX+tbW+10,curve=sori*-18;
+  const matC=mat.id==='ghost'?'#c8dce8':mat.id==='blood'?'#8a3a3a':mat.id==='dragon'?'#c8b87a':mat.id==='meteor'?'#6a7a9a':mat.id==='shadow'?'#2a1a3a':mat.id==='volcanic'?'#1c1c1c':mat.id==='shogun'?'#8a7a5a':'#7a8a9a';
+  const bH=H*.3;
+  ctx.beginPath();
+  ctx.moveTo(bX,-bH/2);
+  ctx.bezierCurveTo(bX+bLen*.4,-bH/2+curve,bX+bLen*.8,-bH/2+curve*.8,bX+bLen+20,curve*.5);
+  ctx.bezierCurveTo(bX+bLen*.8,bH/2+curve*.8,bX+bLen*.4,bH/2+curve,bX,bH/2);
+  ctx.closePath();
+  const bg2=ctx.createLinearGradient(0,-bH/2,0,bH/2);
+  bg2.addColorStop(0,lhx(matC,42));bg2.addColorStop(.3,lhx(matC,18));bg2.addColorStop(.6,matC);bg2.addColorStop(1,lhx(matC,-24));
+  ctx.fillStyle=bg2;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.32)';ctx.lineWidth=1.4;
+  ctx.beginPath();ctx.moveTo(bX+8,-bH*.2+curve*.1);ctx.bezierCurveTo(bX+bLen*.4,-bH*.2+curve*.85,bX+bLen*.8,-bH*.16+curve*.7,bX+bLen+4,curve*.4);ctx.stroke();
+  // Hi
+  if(sw.hi&&sw.hi.id!=='none'){ctx.strokeStyle='rgba(0,0,0,.38)';ctx.lineWidth=sw.hi.id==='futasuji'?2:3;ctx.beginPath();ctx.moveTo(bX+18,-bH*.1+curve*.2);ctx.bezierCurveTo(bX+bLen*.4,-bH*.1+curve*.75,bX+bLen*.75,-bH*.08+curve*.6,bX+bLen-18,curve*.35);ctx.stroke();if(sw.hi.id==='futasuji'){ctx.beginPath();ctx.moveTo(bX+18,-bH*.18+curve*.2);ctx.bezierCurveTo(bX+bLen*.4,-bH*.18+curve*.75,bX+bLen*.75,-bH*.15+curve*.6,bX+bLen-18,curve*.26);ctx.stroke();}}
+  // Hamon
+  drawHamonLine(ctx,bX,bX+bLen,bH,curve,sw.hamon?.id||'suguha',mat.gc);
+  // Rarity shimmer
+  ctx.globalAlpha=.35;const sg=ctx.createLinearGradient(bX,0,bX+bLen,0);sg.addColorStop(0,'transparent');sg.addColorStop(.5,rglow(r).replace(',.',',.12,').replace(',.',',')||'transparent');sg.addColorStop(1,'transparent');ctx.fillStyle=sg;ctx.fillRect(bX,-bH/2,bLen,bH);ctx.globalAlpha=1;
+  ctx.restore();
+  ctx.font="bold 10px 'Cinzel',serif";ctx.fillStyle=rcol(r);ctx.textAlign='right';ctx.fillText(r.toUpperCase(),W-8,H-7);ctx.textAlign='left';
+}
+
+function drawHamonLine(ctx,sX,eX,bH,curve,hId,gc){
+  ctx.save();ctx.globalAlpha=.55;
+  const hY=bH*.3,len=eX-sX;
+  ctx.strokeStyle=gc||'rgba(255,240,200,.6)';ctx.lineWidth=1.4;ctx.shadowColor=gc||'#ffee88';ctx.shadowBlur=4;
+  ctx.beginPath();ctx.moveTo(sX,hY+curve*.48);
+  if(hId==='suguha'){ctx.bezierCurveTo(sX+len*.3,hY+curve*.68,sX+len*.7,hY+curve*.58,eX,curve*.38);}
+  else if(hId==='notare'){for(let i=0;i<6;i++){const x2=sX+((i+.5)/6)*len;ctx.quadraticCurveTo(x2,hY+(i%2===0?-8:8)+curve*(.5-i*.05),sX+((i+1)/6)*len,hY+curve*(.5-i*.05));}}
+  else if(hId==='gunome'){for(let i=0;i<8;i++)ctx.arc(sX+(i/8)*len+len/16,hY-4+curve*(.5-i*.04),len/16,Math.PI,0);}
+  else if(hId==='choji'){for(let i=0;i<6;i++){const x=sX+(i/6)*len;ctx.bezierCurveTo(x,hY-12+curve*(.5-i*.05),x+len/12,hY-18+curve*(.5-i*.05),x+len/8,hY+curve*(.5-i*.05));}}
+  else{for(let i=0;i<10;i++)ctx.lineTo(sX+(i/10)*len+rand(-4,4),hY+rand(-18,4)+curve*(.5-i*.04));}
+  ctx.stroke();ctx.shadowBlur=0;ctx.restore();
+}
+
+// ══════════════════════════════════════════════════════
+//  HOME ANIMATION
+// ══════════════════════════════════════════════════════
+function initHome(){
+  const c=$('homeCanvas');if(!c)return;
+  c.width=window.innerWidth;c.height=window.innerHeight;
+  const ctx=c.getContext('2d');
+  const embers=[];for(let i=0;i<90;i++)embers.push(mkEmber(c));
+  let t=0;
+  function frame(){
+    if(!$('screen-home').classList.contains('active')){hAnimId=null;return;}
+    ctx.clearRect(0,0,c.width,c.height);
+    const bg=ctx.createLinearGradient(0,c.height,0,0);bg.addColorStop(0,'rgba(28,12,4,.97)');bg.addColorStop(.35,'rgba(14,8,4,.7)');bg.addColorStop(1,'rgba(5,4,4,0)');ctx.fillStyle=bg;ctx.fillRect(0,0,c.width,c.height);
+    const fg=ctx.createRadialGradient(c.width/2,c.height+100,0,c.width/2,c.height+100,620);fg.addColorStop(0,'rgba(232,93,4,.42)');fg.addColorStop(.4,'rgba(180,50,0,.15)');fg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=fg;ctx.fillRect(0,0,c.width,c.height);
+    for(let i=0;i<3;i++){const sy=c.height*.62+Math.sin(t*.022+i*2)*28;const sh=ctx.createLinearGradient(0,sy-18,0,sy+18);sh.addColorStop(0,'rgba(255,100,20,0)');sh.addColorStop(.5,'rgba(255,80,10,.06)');sh.addColorStop(1,'rgba(255,100,20,0)');ctx.fillStyle=sh;ctx.fillRect(0,sy-18,c.width,36);}
+    embers.forEach((e,i)=>{e.y-=e.sp+Math.sin(t*.03+i)*.3;e.x+=Math.sin(t*.022+i*.5)*.5;e.life--;if(e.y<-20||e.life<=0)embers[i]=mkEmber(c);const a=Math.min(1,e.life/60)*e.al;ctx.fillStyle=`rgba(${e.r},${e.g},0,${a})`;ctx.beginPath();ctx.arc(e.x,e.y,e.sz,0,Math.PI*2);ctx.fill();const eg=ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.sz*4);eg.addColorStop(0,`rgba(${e.r},${Math.floor(e.g/2)},0,${a*.4})`);eg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=eg;ctx.beginPath();ctx.arc(e.x,e.y,e.sz*4,0,Math.PI*2);ctx.fill();});
+    t++;hAnimId=requestAnimationFrame(frame);
+  }
+  if(hAnimId)cancelAnimationFrame(hAnimId);frame();
+}
+function mkEmber(c){const oy=c.height*(0.72+Math.random()*.28);const hot=Math.random()<.3;return{x:c.width*.18+Math.random()*c.width*.64,y:oy,sz:Math.random()*2.4+.5,sp:Math.random()*1.4+.5,al:Math.random()*.8+.2,life:ri(80,200),r:hot?255:ri(200,255),g:hot?ri(175,240):ri(75,135)};}
+window.addEventListener('resize',()=>{const c=$('homeCanvas');if(c){c.width=window.innerWidth;c.height=window.innerHeight;}});
+
+// ══════════════════════════════════════════════════════
+//  JOURNEY
+// ══════════════════════════════════════════════════════
+function beginJourney(){G.sword=swordDefault();FA.done=false;FA.flaws=[];if(FA.iv){clearInterval(FA.iv);FA.iv=null;}buildProg();goTo(0);ss('screen-forge');}
+
+function buildProg(){
+  const p=$('prog');p.innerHTML='';
+  const lbls=['Samurai','Steel','Blade','Folding','Forge','Hamon','Polish','Groove','Handle','Guard','Fittings','Saya','Sign'];
+  lbls.forEach((l,i)=>{const d=document.createElement('div');d.className='prog-step';d.id='ps'+i;d.innerHTML=`<div class="prog-dot">${i+1}</div><div class="prog-lbl">${l}</div>`;p.appendChild(d);});
+}
+
+function updProg(n){for(let i=0;i<13;i++){const s=$('ps'+i);if(!s)continue;s.className='prog-step'+(i<n?' done':i===n?' act':'');}}
+
+function goTo(n){
+  document.querySelectorAll('.spanel').forEach(p=>p.style.display='none');
+  const pan=$('s'+n);if(pan){pan.style.display='block';}
+  G.stage=n;$('stgTitle').textContent=STAGE_INFO[n].t;$('stgSub').textContent=STAGE_INFO[n].s;
+  updProg(n);$('btnBack').style.display=n===0?'none':'inline-flex';
+  $('btnNext').textContent=n===12?'⚒ Complete the Forge':'Continue →';
+  $('btnNext').disabled=false;window.scrollTo(0,0);
+  if(n===0)initChar();if(n===1)initMat();if(n===2)initBlade();if(n===3)initFold();
+  if(n===4)initForge();if(n===5)initHamon();if(n===6)initPolish();if(n===7)initGroove();
+  if(n===8)initHandle();if(n===9)initGuard();if(n===10)initFits();if(n===11)initSaya();
+  if(n===12)initSign();
+}
+
+function nav(d){
+  const n=G.stage+d;if(n<0)return;
+  if(d>0){
+    if(G.stage===1&&!G.sword.material){toast('⚠ Select a material');return;}
+    if(G.stage===2&&!G.sword.bladeType){toast('⚠ Select a blade type');return;}
+    if(G.stage===4&&!FA.done){toast('⚠ Use all your strikes first');return;}
+    if(G.stage===5&&!G.sword.hamon){toast('⚠ Choose a hamon pattern');return;}
+    if(G.stage===6&&!G.sword.polish){toast('⚠ Choose a polish level');return;}
+    if(G.stage===9&&!G.sword.tsubaShape){toast('⚠ Choose a tsuba shape');return;}
+    if(G.stage===12){completeForge();return;}
+  }
+  if(n>=13){completeForge();return;}
+  goTo(n);
+}
+
+// ══════════════════════════════════════════════════════
+//  UI HELPERS
+// ══════════════════════════════════════════════════════
+function mkSwatches(gId,colors,key,sub,cb){
+  const g=$(gId);if(!g)return;g.innerHTML='';
+  colors.forEach((c,i)=>{const d=document.createElement('div');d.className='sw'+(i===0?' sel':'')+(sub?' sw-lg':'');d.style.background=c.c||c.color;d.title=c.n||c.name;d.onclick=()=>{g.querySelectorAll('.sw').forEach(s=>s.classList.remove('sel'));d.classList.add('sel');if(key)setK(key,i);if(cb)cb();};g.appendChild(d);});
+}
+function mkPicks(gId,items,key,cb){
+  const g=$(gId);if(!g)return;g.innerHTML='';
+  (Array.isArray(items)?items:[]).forEach((item,i)=>{const n=typeof item==='string'?item:item.name||item;const b=document.createElement('button');b.className='pick'+(i===0?' sel':'');b.textContent=n;b.onclick=()=>{g.querySelectorAll('.pick').forEach(p=>p.classList.remove('sel'));b.classList.add('sel');if(key)setK(key,i);if(cb)cb();};g.appendChild(b);});
+}
+function setK(k,v){const keys=k.split('.');let o=G;for(let i=0;i<keys.length-1;i++)o=o[keys[i]];o[keys[keys.length-1]]=v;}
+function getK(k){return k.split('.').reduce((o,k2)=>o&&o[k2],G);}
+
+function mkOptCards(gId,items,key,withMods,drawFn){
+  const g=$(gId);if(!g)return;g.innerHTML='';
+  items.forEach(item=>{
+    const c=document.createElement('div');c.className='opt';
+    const cur=getK(key);if(cur?.id===item.id)c.classList.add('sel');
+    const modsH=withMods&&item.mods?Object.entries(item.mods).filter(([,v])=>v!==0).map(([k,v])=>`<span class="tag ${v>0?'tp':'tn'}">${v>0?'+':''}${v} ${k}</span>`).join(''):'';
+    if(drawFn){
+      const texWrap=document.createElement('div');texWrap.className='opt-tex';
+      const cv=document.createElement('canvas');cv.width=280;cv.height=72;
+      drawFn(cv.getContext('2d'),280,72);texWrap.appendChild(cv);c.appendChild(texWrap);
+    }
+    const body=document.createElement('div');body.className='opt-body';
+    body.innerHTML=`<div class="opt-name">${item.name}</div>${item.sub?`<div class="opt-sub">${item.sub}</div>`:''}<div class="opt-desc">${item.desc||''}</div>${modsH?`<div class="tags">${modsH}</div>`:''}`;
+    c.appendChild(body);
+    c.onclick=()=>{g.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));c.classList.add('sel');setK(key,item);};
+    g.appendChild(c);
+  });
+}
+
+function statBars(stats){const sc={sharpness:'#ff8844',durability:'#4499cc',flexibility:'#44cc88',mystique:'#cc88ee'};return`<div class="stats">${Object.entries(stats).map(([k,v])=>`<div class="srow"><div class="slbl">${k}</div><div class="strack"><div class="sfill" style="width:${v}%;background:${sc[k]||'#aaa'};"></div></div><div class="sval">${v}</div></div>`).join('')}</div>`;}
+
+// ══════════════════════════════════════════════════════
+//  STAGE INITS
+// ══════════════════════════════════════════════════════
+function initChar(){
+  mkSwatches('skinG',SKIN_T,'char.skin',false,uc);mkSwatches('hcolG',HAIR_C,'char.hcol',false,uc);
+  mkSwatches('acolG',ARMOR_C,'char.acol',false,uc);mkSwatches('accG',ACCENT_C,'char.acc',false,uc);
+  mkPicks('hairG',HAIRS,'char.hair',uc);mkPicks('faceG',FACES,'char.face',uc);mkPicks('armorG',ARMORS,'char.armor',uc);
+  const sg=$('styleG');if(sg){sg.innerHTML='';STYLES.forEach(s=>{const d=document.createElement('div');d.className='opt'+(s.id===G.char.style?' sel':'');d.innerHTML=`<div class="opt-body"><div class="opt-name">${s.name}</div><div class="opt-desc">${s.desc}</div></div>`;d.onclick=()=>{sg.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));d.classList.add('sel');G.char.style=s.id;uc();};sg.appendChild(d);});}
+  uc();
+}
+function uc(){
+  G.char.name=$('cNameIn')?.value||'';G.char.title=$('cTitleSel')?.value||'Apprentice Swordsmith';G.char.clan=$('cClanSel')?.value||'Sōshū School';
+  $('cname').textContent=G.char.name||'Unnamed';$('ctitle').textContent=G.char.title+' · '+G.char.clan;
+  drawChar($('charCanvas'),G.char);
+  const st=STYLES.find(s=>s.id===G.char.style)||STYLES[0];
+  $('cstyles').innerHTML=Object.entries(st.bon).map(([k,v])=>`<span class="tag tp" style="margin:2px">+${v} ${k}</span>`).join('');
+}
+
+function initMat(){
+  const g=$('matGrid');g.innerHTML='';
+  MATERIALS.forEach(mat=>{
+    const c=document.createElement('div');c.className='opt'+(G.sword.material?.id===mat.id?' sel':'');
+    const cv=document.createElement('canvas');cv.width=280;cv.height=72;
+    mat.df(cv.getContext('2d'),280,72);
+    const tw=document.createElement('div');tw.className='opt-tex';tw.appendChild(cv);c.appendChild(tw);
+    const locked=!mat.ul;
+    c.innerHTML+=`<div class="opt-body"><div class="rb ${rcls(mat.r)}">${mat.r.toUpperCase()}</div><div class="opt-name">${mat.name}</div><div class="opt-sub">${mat.sub}</div><div class="opt-desc">${mat.desc}</div><div class="tags">${mat.bon.slice(0,2).map(b=>`<span class="tag tp">${b}</span>`).join('')}${mat.mal.map(m=>`<span class="tag tn">${m}</span>`).join('')}${mat.cost>0?`<span class="tag tc">⬡${mat.cost} Ryō</span>`:'<span class="tag tp">Free</span>'}</div>${locked?`<button class="btn btn-gold btn-sm" style="width:100%;margin-top:8px;" onclick="event.stopPropagation();unlockMat('${mat.id}',${mat.cost})">Unlock ⬡${mat.cost}</button>`:''}</div>`;
+    if(!locked)c.onclick=()=>selMat(mat,c);
+    else c.style.opacity='.55';
+    g.appendChild(c);
+    // Re-insert the canvas (innerHTML cleared it)
+    c.querySelector('.opt-tex')?.appendChild(cv);
+    if(G.sword.material?.id===mat.id)showMatPrev(mat);
+  });
+}
+function unlockMat(id,cost){if(G.gold<cost){toast('⚠ Not enough Ryō!');return;}const m=MATERIALS.find(m=>m.id===id);m.ul=true;G.gold-=cost;ug();toast('✓ Unlocked: '+m.name);initMat();}
+function selMat(mat,c){document.querySelectorAll('#matGrid .opt').forEach(o=>o.classList.remove('sel'));c.classList.add('sel');G.sword.material=mat;showMatPrev(mat);}
+function showMatPrev(mat){
+  $('matPrev').innerHTML=`<div class="ptitle">Material Preview</div><div class="two"><div><canvas id="mbig" width="280" height="100" style="width:100%;border-radius:4px;border:1px solid var(--border);margin-bottom:10px;"></canvas><div class="rb ${rcls(mat.r)}">${mat.r.toUpperCase()}</div><div class="opt-name" style="margin-top:6px;">${mat.name}</div><div class="opt-sub">${mat.sub}</div><div class="opt-desc" style="margin-top:8px;">${mat.desc}</div><div class="tags" style="margin-top:8px;">${mat.bon.map(b=>`<span class="tag tp">${b}</span>`).join('')}${mat.mal.map(m=>`<span class="tag tn">${m}</span>`).join('')}</div></div><div>${statBars(mat.stats)}</div></div>`;
+  const cv=$('mbig');if(cv)mat.df(cv.getContext('2d'),280,100);
+}
+
+function initBlade(){
+  const g=$('btypeGrid');g.innerHTML='';
+  BLADE_TYPES.forEach(bt=>{const c=document.createElement('div');c.className='opt'+(G.sword.bladeType?.id===bt.id?' sel':'');c.innerHTML=`<div class="opt-body"><div class="opt-name">${bt.name}</div><div class="opt-sub">${bt.sub} · ${bt.len}cm</div><div class="opt-desc">${bt.desc}</div><div class="tags">${Object.entries(bt.mods).filter(([,v])=>v!==0).map(([k,v])=>`<span class="tag ${v>0?'tp':'tn'}">${v>0?'+':''}${v} ${k}</span>`).join('')}<span class="tag tc">×${bt.vm} value</span></div></div>`;c.onclick=()=>{g.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));c.classList.add('sel');G.sword.bladeType=bt;ubp();};g.appendChild(c);});ubp();
+}
+function ubp(){
+  G.sword.sori=parseInt($('soriS')?.value||5);G.sword.kissaki=parseInt($('kisS')?.value||2);G.sword.mihaba=parseInt($('mihS')?.value||2);G.sword.kasane=parseInt($('kasS')?.value||2);
+  const kn=['Ko-kissaki','Chu-ko','Chu','Chu-ō','Ō-kissaki'],mn=['Narrow','Slim','Standard','Wide','Very Wide'],kaN=['Thin','Light','Standard','Heavy','Thick'];
+  if($('soriV'))$('soriV').textContent=(G.sword.sori/10).toFixed(1);if($('kisV'))$('kisV').textContent=kn[G.sword.kissaki];if($('mihV'))$('mihV').textContent=mn[G.sword.mihaba];if($('kasV'))$('kasV').textContent=kaN[G.sword.kasane];
+  drawGeom();updGeomStats();
+}
+function drawGeom(){
+  const cv=$('geomC');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;
+  ctx.fillStyle='#080604';ctx.fillRect(0,0,w,h);
+  const sori=(G.sword.sori/10)*.9,mihaba=(G.sword.mihaba+1)/3,bW=h*.28*mihaba,crv=sori*h*.28,m=22;
+  ctx.beginPath();ctx.moveTo(m,-bW/2+h/2);ctx.bezierCurveTo(m+(w-m*2)*.4,h/2-bW/2-crv,m+(w-m*2)*.8,h/2-bW/4-crv*.6,w-m,h/2-crv*.3);ctx.bezierCurveTo(m+(w-m*2)*.8,h/2+bW/4-crv*.2,m+(w-m*2)*.4,h/2+bW/2,m,h/2+bW/2);ctx.closePath();
+  const bg=ctx.createLinearGradient(m,h/2-bW/2,m,h/2+bW/2);bg.addColorStop(0,'rgba(180,200,220,.5)');bg.addColorStop(.4,'#7a8a9a');bg.addColorStop(1,'rgba(40,50,60,.8)');ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;ctx.stroke();
+}
+function updGeomStats(){
+  const s=G.sword.sori,m=G.sword.mihaba,k=G.sword.kasane;
+  const sp=Math.round(80-s*2-k*3+m),sh=Math.round(5-k*2+m*2),du=Math.round(k*4-m*2+5),fl=Math.round(s*2-k*3+5);
+  $('geomStats').innerHTML=`<div class="stats">${[['Speed',clamp(sp,30,100),'#ffaa44'],['Sharp Mod',clamp(sh,-20,20),'#ff8844'],['Dur Mod',clamp(du,-20,20),'#4499cc'],['Flex Mod',clamp(fl,-20,20),'#44cc88']].map(([n,v,c])=>`<div class="srow"><div class="slbl">${n}</div><div class="strack"><div class="sfill" style="width:${clamp(((v+20)/120)*100,0,100)}%;background:${c};"></div></div><div class="sval">${v>0?'+':''}${v}</div></div>`).join('')}</div>`;
+}
+
+function initFold(){ufo();}
+function ufo(){
+  const f=parseInt($('foldS')?.value||8);G.sword.folds=f;
+  if($('foldV'))$('foldV').textContent=f;if($('layersV'))$('layersV').textContent=Math.pow(2,f).toLocaleString()+' layers';
+  const risk=clamp(f<8?f*4:30+(f-8)*10,0,100);
+  const bb=$('britBar');if(bb){bb.style.width=risk+'%';bb.style.background=risk<30?'var(--ru)':risk<60?'#cc8800':'var(--rm)';}
+  if($('britLbl'))$('britLbl').textContent=['Very Low — recommended','Low — standard','Moderate — skilled smith','High — master level','Extreme — legendary risk'][Math.min(4,Math.floor(risk/20))];
+  const qb=Math.min(25,f*1.8);
+  if($('foldStats'))$('foldStats').innerHTML=`<div class="stats"><div class="srow"><div class="slbl">Quality Bonus</div><div class="strack"><div class="sfill" style="width:${qb*4}%;background:#ffaa44;"></div></div><div class="sval">+${qb.toFixed(0)}</div></div><div class="srow"><div class="slbl">Layers</div><div class="strack"><div class="sfill" style="width:${Math.min(100,(f/15)*100)}%;background:#4499cc;"></div></div><div class="sval">${Math.pow(2,f).toLocaleString()}</div></div></div>`;
+  drawFoldViz();
+}
+function drawFoldViz(){
+  const cv=$('foldC');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;ctx.fillStyle='#080604';ctx.fillRect(0,0,w,h);
+  const f=G.sword.folds,lc=Math.min(64,Math.pow(2,Math.min(6,f))),lh=Math.max(1,(h*.62)/lc),sy=h*.18,bw=w*.55,bx=w*.22;
+  for(let i=0;i<lc;i++){const t=i/lc;ctx.fillStyle=`rgb(${Math.floor(80+t*105)},${Math.floor(60+t*62)},${Math.floor(40+t*38)})`;ctx.fillRect(bx,sy+i*(lh+.5),bw,lh);}
+  const glw=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,w*.5);glw.addColorStop(0,'rgba(200,120,40,.15)');glw.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glw;ctx.fillRect(0,0,w,h);
+  ctx.font="10px 'Cinzel',serif";ctx.fillStyle='rgba(200,160,100,.7)';ctx.textAlign='center';ctx.fillText(`${f} folds = ${Math.pow(2,f).toLocaleString()} layers`,w/2,h*.9);ctx.textAlign='left';
+}
+
+function initForge(){
+  if(FA.iv){clearInterval(FA.iv);FA.iv=null;}
+  FA={temp:700,quality:50,strikes:25,cooling:false,sparks:[],hamY:40,done:false,iv:null,flaws:[]};
+  $('flawsDisp').style.display='none';$('btnNext').disabled=true;$('forgeMsg').textContent='Heat the metal, then strike in the orange-white sweet zone!';$('forgeMsg').style.color='var(--tdim)';
+  const cv=$('forgeC');cv.onclick=doStrike;cv.ontouchstart=e=>{e.preventDefault();doStrike(e.touches[0]);};
+  FA.iv=setInterval(forgeLoop,1000/40);
+}
+function forgeLoop(){if(FA.done)return;if(!FA.cooling){FA.temp=Math.min(1550,FA.temp+8+Math.random()*5);if(FA.temp>=1500)FA.cooling=true;}else{FA.temp=Math.max(500,FA.temp-6-Math.random()*4);if(FA.temp<=520)FA.cooling=false;}if(FA.hamY>0)FA.hamY-=6;FA.sparks=FA.sparks.map(s=>({...s,x:s.x+s.vx,y:s.y+s.vy,vy:s.vy+.4,life:s.life-1})).filter(s=>s.life>0);updForgeHUD();renderForge();}
+function doStrike(e){
+  const cv=$('forgeC');if(!cv||FA.done||FA.strikes<=0)return;
+  const rect=cv.getBoundingClientRect();const cx=(e.clientX-rect.left)*(cv.width/rect.width);const cy=(e.clientY-rect.top)*(cv.height/rect.height);
+  if(cx<110||cx>600||cy<90||cy>190){spawnHit(e.clientX,e.clientY,'MISS','#555');return;}
+  FA.strikes--;FA.hamY=34;
+  const mx=cx,my=140;for(let i=0;i<26;i++)FA.sparks.push({x:mx,y:my,vx:(Math.random()-.5)*7,vy:-(Math.random()*5+1),life:28+Math.random()*18,color:FA.temp>900?'#ffcc44':'#ff6622'});
+  const t=FA.temp;let delta=0,msg='',mc='';
+  if(t>=1000&&t<=1420){delta=3+Math.random()*5;msg='✦ PERFECT';mc='#44dd88';}
+  else if(t>1420){delta=-(2+Math.random()*4);msg='TOO HOT';mc='#ff8822';if(Math.random()<.35){const f=rItem(['Scale Inclusion','Cold Shut','Surface Pit','Uneven Edge']);if(!FA.flaws.includes(f))FA.flaws.push(f);}}
+  else{delta=-(4+Math.random()*5);msg='TOO COLD';mc='#cc4433';if(Math.random()<.45){const f=rItem(['Hairline Crack','Weak Fold','Cold Shut','Stress Fracture']);if(!FA.flaws.includes(f))FA.flaws.push(f);}}
+  FA.quality=clamp(FA.quality+delta,0,100);$('forgeMsg').textContent=msg;$('forgeMsg').style.color=mc;
+  spawnHit(e.clientX,e.clientY,msg,mc);
+  if(FA.strikes<=0)endForge();
+}
+function spawnHit(x,y,msg,color){const fw=$('forgeWrap');const r=fw.getBoundingClientRect();const d=document.createElement('div');d.className='float-hit';d.style.left=(x-r.left)+'px';d.style.top=(y-r.top)+'px';d.style.color=color;d.textContent=msg;fw.style.position='relative';fw.appendChild(d);setTimeout(()=>d.remove(),900);}
+function endForge(){FA.done=true;clearInterval(FA.iv);G.sword.quality=FA.quality;G.sword.flaws=[...FA.flaws];if(G.sword.folds>10&&Math.random()<(G.sword.folds-10)*.07)G.sword.flaws.push('Brittle Layer');$('btnNext').disabled=false;const q=FA.quality;$('forgeMsg').textContent=q>=70?`⚒ Masterful! Quality: ${Math.round(q)}%`:q>=45?`⚒ Solid work. Quality: ${Math.round(q)}%`:`⚠ Rough forging. Quality: ${Math.round(q)}% — flaws detected.`;$('forgeMsg').style.color=q>=70?'var(--ru)':q>=45?'var(--glow)':'var(--rm)';if(FA.flaws.length>0){$('flawsDisp').style.display='block';$('flawsDisp').innerHTML='<div style="font-family:\'Cinzel\',serif;font-size:.68rem;letter-spacing:.15em;color:var(--tdim);margin-bottom:7px;">FLAWS</div>'+FA.flaws.map(f=>`<span class="flaw-chip">${f}</span>`).join('');}}
+function updForgeHUD(){const t=FA.temp,q=FA.quality,s=FA.strikes;const tp=clamp(((t-400)/1150)*100,0,100);$('tFill').style.width=tp+'%';$('tFill').style.background=t<900?'#4488cc':t<1000?'#ff8800':t<1200?'#ff5500':t<1420?'#ff9900':'#eee';$('tVal').textContent=Math.round(t)+'°C';$('qFill').style.width=q+'%';$('qVal').textContent=Math.round(q)+'%';$('sFill').style.width=(s/25*100)+'%';$('sVal').textContent=s;}
+function renderForge(){
+  const cv=$('forgeC');if(!cv)return;const ctx=cv.getContext('2d'),W=cv.width,H=cv.height,t=FA.temp;
+  ctx.fillStyle='#050302';ctx.fillRect(0,0,W,H);
+  const fg=ctx.createRadialGradient(W/2,H+80,0,W/2,H+80,500);fg.addColorStop(0,`rgba(220,80,10,${Math.min(.5,t/3000)})`);fg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=fg;ctx.fillRect(0,0,W,H);
+  // Forge walls
+  ctx.fillStyle='#1a1008';ctx.fillRect(0,H*.7,W,H*.3);ctx.fillStyle='#0e0804';ctx.fillRect(0,H*.76,W,H*.24);
+  for(let bx=0;bx<W;bx+=28)for(let by=Math.floor(H*.7);by<H;by+=14){ctx.strokeStyle='rgba(255,100,20,.04)';ctx.lineWidth=1;ctx.strokeRect(bx,by,27,13);}
+  // Coals
+  for(let i=0;i<10;i++){const ex=120+i*55,ey=H*.74;const eg=ctx.createRadialGradient(ex,ey,0,ex,ey,22);const al=.4+Math.sin(Date.now()*.003+i)*.3;eg.addColorStop(0,`rgba(255,${ri(100,180)},0,${al})`);eg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=eg;ctx.fillRect(ex-22,ey-22,44,44);ctx.fillStyle=`rgba(${ri(200,255)},${ri(60,120)},0,.8)`;ctx.beginPath();ctx.arc(ex+rand(-3,3),ey+rand(-2,2),rand(2,5),0,Math.PI*2);ctx.fill();}
+  // Metal bar
+  const mX=110,mY=105,mW=480,mH=60;
+  const r=t<700?40:t<900?140:t<1100?230:t<1300?255:255,g2=t<700?15:t<900?40:t<1100?100:t<1300?160:t<1420?210:250,b2=t<1400?0:Math.floor((t-1400)/1.5);
+  const mg=ctx.createRadialGradient(mX+mW/2,mY+mH/2,0,mX+mW/2,mY+mH/2,mW*.8);mg.addColorStop(0,`rgba(${r},${g2},${b2},${Math.min(.4,t/2500)})`);mg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=mg;ctx.fillRect(mX-80,mY-60,mW+160,mH+120);
+  const bs=16;for(let bx=0;bx<mW;bx+=bs){const v=ri(-8,8);ctx.fillStyle=`rgb(${clamp(r+v,0,255)},${clamp(g2+v,0,255)},${clamp(b2+v,0,255)})`;ctx.fillRect(mX+bx,mY,Math.min(bs,mW-bx),mH);}
+  ctx.globalAlpha=.22;ctx.fillStyle='rgba(255,255,200,1)';ctx.fillRect(mX,mY,mW,5);ctx.globalAlpha=1;
+  // Hammer
+  const hy2=FA.hamY;ctx.fillStyle='#4a3520';ctx.fillRect(558-5,hy2+30,10,75);ctx.fillStyle='#3a3a3a';ctx.fillRect(540,hy2,56,26);ctx.fillStyle='#555';ctx.fillRect(540,hy2,56,7);
+  // Anvil
+  ctx.fillStyle='#1c1c1c';ctx.fillRect(88,164,500,38);ctx.fillStyle='#252525';ctx.fillRect(118,147,440,18);ctx.fillStyle='#2e2e2e';ctx.fillRect(108,137,460,12);ctx.fillStyle='#3a3a3a';ctx.fillRect(108,137,460,4);
+  // Sparks
+  FA.sparks.forEach(s=>{ctx.save();ctx.globalAlpha=s.life/45;ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(s.x,s.y,rand(1,2.5),0,Math.PI*2);ctx.fill();ctx.restore();});
+  // Temp zone bar
+  const tzX=48,tzY=H-28,tzW=W-96,tzH=11;ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(tzX,tzY,tzW,tzH);const szS=tzX+tzW*.45,szE=tzX+tzW*.78;ctx.fillStyle='rgba(50,200,50,.15)';ctx.fillRect(szS,tzY,szE-szS,tzH);ctx.strokeStyle='rgba(50,200,50,.4)';ctx.lineWidth=1;ctx.strokeRect(szS,tzY,szE-szS,tzH);const curX=tzX+tzW*clamp((t-500)/1050,0,1);ctx.fillStyle=`rgb(${r},${Math.floor(g2/2)+28},0)`;ctx.fillRect(curX-3,tzY-5,6,tzH+10);ctx.fillStyle='rgba(100,200,100,.7)';ctx.font='9px monospace';ctx.fillText('SWEET ZONE',szS+5,tzY+tzH+13);ctx.fillStyle='rgba(100,100,100,.7)';ctx.fillText('COLD',tzX+3,tzY+tzH+13);ctx.fillText('WHITE HOT',tzX+tzW-56,tzY+tzH+13);
+}
+
+function initHamon(){
+  const g=$('hamonGrid');g.innerHTML='';
+  HAMONS.forEach(h=>{const c=document.createElement('div');c.className='hamon-card'+(G.sword.hamon?.id===h.id?' sel':'');const cv=document.createElement('canvas');cv.className='hamon-prev';cv.width=200;cv.height=65;drawHamonPrev(cv.getContext('2d'),200,65,h.id);c.appendChild(cv);c.innerHTML+=`<div class="hamon-lbl"><div style="font-weight:700;color:var(--thead)">${h.name}</div><div style="font-size:.62rem;color:var(--ember2)">${h.sub}</div><div style="font-size:.68rem;color:var(--tdim);margin-top:3px">${h.desc}</div></div>`;c.onclick=()=>{g.querySelectorAll('.hamon-card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');G.sword.hamon=h;uha();};g.appendChild(c);});uha();
+}
+function drawHamonPrev(ctx,w,h,id){ctx.fillStyle='#0a0806';ctx.fillRect(0,0,w,h);ctx.fillStyle='rgba(120,100,80,.28)';ctx.fillRect(0,h*.4,w,h*.6);ctx.strokeStyle='rgba(255,220,100,.7)';ctx.lineWidth=1.4;ctx.shadowColor='rgba(255,200,80,.5)';ctx.shadowBlur=5;const hy2=h*.42;ctx.beginPath();ctx.moveTo(0,hy2);if(id==='suguha')ctx.lineTo(w,hy2);else if(id==='notare'){for(let i=0;i<6;i++)ctx.quadraticCurveTo((i+.5)/6*w,hy2+(i%2===0?-8:8),(i+1)/6*w,hy2);}else if(id==='gunome'){for(let i=0;i<8;i++)ctx.arc((i+.5)/8*w,hy2,w/16,Math.PI,0);}else if(id==='choji'){for(let i=0;i<5;i++){const x=(i+.5)/5*w;ctx.bezierCurveTo(x-8,hy2-18,x+8,hy2-18,x+w/10,hy2);}}else{for(let i=0;i<10;i++)ctx.lineTo((i+1)/10*w,hy2+rand(-14,4));}ctx.stroke();ctx.shadowBlur=0;}
+function uha(){G.sword.nie=parseInt($('nieS')?.value||2);G.sword.nioi=parseInt($('nioiS')?.value||2);const nn=['Sparse','Light','Medium','Dense','Extreme'],no=['Dim','Soft','Medium','Bright','Blinding'];if($('nieV'))$('nieV').textContent=nn[G.sword.nie];if($('nioiV'))$('nioiV').textContent=no[G.sword.nioi];drawHamonFull();}
+function drawHamonFull(){const cv=$('hamonPrev');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;ctx.fillStyle='#0a0806';ctx.fillRect(0,0,w,h);ctx.fillStyle='rgba(80,100,120,.25)';ctx.fillRect(0,h*.35,w,h*.65);const nd=(G.sword.nie+1)*28,nb=(G.sword.nioi+1)*.14;for(let i=0;i<nd;i++){const x=rand(0,w),y=rand(h*.3,h*.54);ctx.fillStyle=`rgba(255,228,145,${rand(.18,nb*1.5)})`;ctx.beginPath();ctx.arc(x,y,rand(.5,2),0,Math.PI*2);ctx.fill();}if(G.sword.hamon)drawHamonPrev(ctx,w,h,G.sword.hamon.id);}
+
+function initPolish(){mkOptCards('polGrid',POLISH,'sword.polish',true,null);mkOptCards('surfGrid',SURFACES,'sword.surface',false,null);}
+function initGroove(){mkOptCards('hiGrid',HI,'sword.hi',false,null);mkOptCards('engGrid',ENGRAVINGS,'sword.engraving',false,null);if(!G.sword.hi)G.sword.hi=HI[0];if(!G.sword.engraving)G.sword.engraving=ENGRAVINGS[0];}
+function initHandle(){
+  mkOptCards('coreGrid',TSUKA_CORES,'sword.tsukaCore',false,null);if(!G.sword.tsukaCore)G.sword.tsukaCore=TSUKA_CORES[0];
+  mkPicks('itoMatG',ITO_MATS,'sword.itoMat',drawHandPrev);mkPicks('itoPatG',ITO_PATS,'sword.itoPat',drawHandPrev);
+  mkOptCards('menukiGrid',MENUKIS,'sword.menuki',false,null);if(!G.sword.menuki)G.sword.menuki=MENUKIS[0];
+  mkSwatches('itoColG',ITO_COLORS,'sword.itoCol',false,drawHandPrev);drawHandPrev();
+}
+function drawHandPrev(){
+  const cv=$('handleC');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;ctx.fillStyle='#0a0806';ctx.fillRect(0,0,w,h);
+  const ic=ITO_COLORS[G.sword.itoCol||0]?.c||'#111',pat=ITO_PATS[G.sword.itoPat||0]||'Standard Diamond',hH=h*.38,hW=w*.68,hx=(w-hW)/2,hy=(h-hH)/2;
+  ctx.fillStyle='#3a2810';ctx.fillRect(hx,hy,hW,hH);
+  ctx.fillStyle=ic;
+  if(pat.includes('Diamond')){for(let x=hx+4;x<hx+hW-4;x+=15){ctx.beginPath();ctx.moveTo(x,hy);ctx.lineTo(x+7,hy+hH/2);ctx.lineTo(x,hy+hH);ctx.lineTo(x-7,hy+hH/2);ctx.closePath();ctx.fill();ctx.strokeStyle='rgba(255,255,255,.1)';ctx.lineWidth=1;ctx.stroke();}}
+  else if(pat.includes('Spiral')){ctx.lineWidth=8;ctx.strokeStyle=ic;ctx.globalAlpha=.75;for(let x=hx+6;x<hx+hW-6;x+=10){ctx.beginPath();ctx.moveTo(x,hy);ctx.lineTo(x+6,hy+hH);ctx.stroke();}ctx.globalAlpha=1;}
+  else{ctx.fillRect(hx+4,hy+4,hW-8,hH-8);}
+  ctx.fillStyle='#1f1f1f';ctx.beginPath();ctx.ellipse(hx+8,hy+hH/2,11,hH/2+5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#8b6914';ctx.fillRect(hx+hW,hy-3,11,hH+6);
+  // Blade hint
+  ctx.fillStyle='rgba(120,140,160,.4)';ctx.fillRect(hx+hW+11,hy+hH*.2,hW*.8,hH*.6);
+}
+function initGuard(){mkOptCards('tsubaGrid',TSUBA_SHAPES,'sword.tsubaShape',false,null);mkPicks('tsubaMatG',TSUBA_MATS,'sword.tsubaMat',drawTsubaPrev);mkPicks('tsubaFinG',TSUBA_FINS,'sword.tsubaFin',drawTsubaPrev);drawTsubaPrev();}
+function drawTsubaPrev(){
+  const cv=$('tsubaC');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;ctx.clearRect(0,0,w,h);ctx.fillStyle='#0a0806';ctx.fillRect(0,0,w,h);
+  const cx=w/2,cy=h/2,R=Math.min(w,h)*.42,mn=TSUBA_MATS[G.sword.tsubaMat||0]||'Iron';
+  const tc=mn.includes('Shakud')?'#1a1208':mn.includes('Brass')?'#6b5200':mn.includes('Silver')?'#707070':'#2a2a2a';
+  const sh=G.sword.tsubaShape?.id||'maru';
+  ctx.fillStyle=tc;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=2;
+  if(sh==='maru'){ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  else if(sh==='kaku'){ctx.fillRect(cx-R,cy-R,R*2,R*2);ctx.strokeRect(cx-R,cy-R,R*2,R*2);}
+  else if(sh==='mokko'){ctx.beginPath();for(let i=0;i<4;i++){const a=i*Math.PI/2+Math.PI/4;ctx.arc(cx+Math.cos(a)*R*.35,cy+Math.sin(a)*R*.35,R*.65,a+Math.PI/2,a+Math.PI*1.5);}ctx.fill();ctx.stroke();}
+  else if(sh==='shobu'){ctx.beginPath();ctx.ellipse(cx,cy,R*.68,R,0,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  else if(sh==='wave'){ctx.beginPath();for(let i=0;i<16;i++){const a=(i/16)*Math.PI*2,r2=i%2===0?R:R*.85;ctx.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);}ctx.closePath();ctx.fill();ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();ctx.stroke();}
+  ctx.fillStyle='#0a0806';ctx.beginPath();ctx.arc(cx,cy,11,0,Math.PI*2);ctx.fill();
+  const fn=TSUBA_FINS[G.sword.tsubaFin||0]||'';
+  if(fn.includes('Gold')){ctx.globalAlpha=.28;const gg=ctx.createRadialGradient(cx,cy,0,cx,cy,R);gg.addColorStop(0,'rgba(220,180,60,.8)');gg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+}
+function initFits(){mkOptCards('kashGrid',KASHIRAS,'sword.kashira',false,null);mkOptCards('habGrid',HABAKIS,'sword.habaki',false,null);mkPicks('seppaG',SEPPAS,'sword.seppa',null);if(!G.sword.kashira)G.sword.kashira=KASHIRAS[0];if(!G.sword.habaki)G.sword.habaki=HABAKIS[0];}
+function initSaya(){
+  mkOptCards('sayaWoodG',SAYA_WOODS,'sword.sayaWood',false,null);if(!G.sword.sayaWood)G.sword.sayaWood=SAYA_WOODS[0];
+  mkPicks('lacStyleG',LAC_STYLES,'sword.lacStyle',null);mkPicks('lacPatG',LAC_PATS,'sword.lacPat',null);
+  mkSwatches('lacColG',LAC_COLORS,'sword.lacCol',false,null);mkPicks('sagMatG',SAG_MATS,'sword.sagMat',null);
+  mkSwatches('sagColG',ITO_COLORS,'sword.sagCol',false,null);
+}
+function initSign(){
+  mkPicks('meiLocG',MEI_LOCS,'sword.meiLoc',null);mkPicks('meiScrG',MEI_SCRIPS,'sword.meiScr',null);
+  mkPicks('ageG',AGES,'sword.age',null);mkOptCards('purposeG',PURPOSES,'sword.purpose',false,null);
+  if(!G.sword.purpose)G.sword.purpose=PURPOSES[0];
+  buildFinalSummary();drawSword($('finalC'),buildSwordObj(),$('finalC').width,$('finalC').height);
+}
+function buildFinalSummary(){
+  const sw=G.sword,mat=sw.material,bt=sw.bladeType;if(!mat||!bt)return;
+  $('finalSum').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:.86rem;"><div>${[['Material',mat.name],['Blade',bt.name+' ('+bt.len+'cm)'],['Shape',bt.sub],['Hamon',sw.hamon?.name||'—'],['Polish',sw.polish?.name||'—']].map(([k,v])=>`<div class="prow"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('')}</div><div>${[['Hi',sw.hi?.name||'None'],['Handle',TSUKA_CORES[0]?.name||'—'],['Guard',sw.tsubaShape?.name||'—'],['Folds',sw.folds+' ('+Math.pow(2,sw.folds).toLocaleString()+' layers)'],['Flaws',sw.flaws?.length||0]].map(([k,v])=>`<div class="prow"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('')}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  COMPLETE FORGE
+// ══════════════════════════════════════════════════════
+function completeForge(){
+  if(FA.iv){clearInterval(FA.iv);FA.iv=null;}
+  currentSword=calcFinalSword();
+  startReveal();
+}
+
+function buildSwordObj(){
+  return{...G.sword,rarity:calcRarity(G.sword),material:G.sword.material||MATERIALS[0],bladeType:G.sword.bladeType||BLADE_TYPES[2]};
+}
+
+function calcFinalSword(){
+  const sw=G.sword,mat=sw.material||MATERIALS[0],bt=sw.bladeType||BLADE_TYPES[2];
+  const style=STYLES.find(s=>s.id===G.char.style)||STYLES[0];
+  let sharp=mat.stats.sharpness,dur=mat.stats.durability,flex=mat.stats.flexibility,myst=mat.stats.mystique;
+  // Folds
+  sharp+=Math.min(22,sw.folds*1.7);dur+=Math.min(18,sw.folds*1.2);flex-=sw.folds>10?(sw.folds-10)*2.5:0;
+  // Mini-game quality
+  const qm=(sw.quality-50)/50;sharp+=qm*20;dur+=qm*15;flex+=qm*10;
+  // Blade type mods
+  sharp+=bt.mods.sharpness;dur+=bt.mods.durability;flex+=bt.mods.flexibility;
+  // Geometry
+  sharp+=G.sword.mihaba-2;dur+=G.sword.kasane*2-4;flex+=G.sword.sori-5;
+  // Polish
+  if(sw.polish){const pm=sw.polish.mods||{};sharp+=pm.sharpness||0;myst+=pm.mystique||0;}
+  // Fighting style bonus
+  Object.entries(style.bon).forEach(([k,v])=>{if(k==='sharpness')sharp+=v;if(k==='durability')dur+=v;if(k==='flexibility')flex+=v;if(k==='mystique')myst+=v;});
+  // Flaws penalty
+  const fp=sw.flaws.length*6;sharp-=fp;dur-=fp;
+  // Random variance
+  sharp+=rand(-5,5);dur+=rand(-5,5);flex+=rand(-5,5);myst+=rand(-3,3);
+  sharp=clamp(Math.round(sharp),5,100);dur=clamp(Math.round(dur),5,100);flex=clamp(Math.round(flex),5,100);myst=clamp(Math.round(myst),5,100);
+  const balance=Math.round((sharp+dur+flex)/3);
+  const rarity=calcRarity2(sharp,dur,flex,myst,sw.flaws.length,mat);
+  // Name
+  const prefix=rItem(NP_A),noun=rItem(NP_B),suf=(rarity==='legendary'||rarity==='mythic'||rarity==='epic')?rItem(NP_S):'';
+  const name=prefix+noun+(suf?' '+suf:'');
+  // Value
+  const rm={common:1,uncommon:2.2,rare:5.5,epic:12,legendary:30,mythic:80};
+  const ageM=[1,1.4,2.2,5,18];const age=ageM[sw.age||0]||1;
+  const value=Math.round(mat.bv*rm[rarity]*(balance/60)*(sw.quality/65)*bt.vm*age*(1-sw.flaws.length*.08)*rand(.88,1.12));
+  return{name,rarity,stats:{sharpness:sharp,durability:dur,flexibility:flex,balance,mystique:myst},value,material:mat,bladeType:bt,char:{...G.char},...sw,flaws:sw.flaws};
+}
+
+function calcRarity({quality,flaws,material}){const mat=material||MATERIALS[0];const q=quality||50;const fl=flaws?.length||0;const avg=(q+mat.stats.sharpness+mat.stats.durability)/3;if(mat.id==='shadow'&&fl===0&&avg>60)return'mythic';if((mat.id==='dragon'||mat.id==='meteor')&&fl<=1&&avg>55)return'legendary';if(fl===0&&avg>80)return'legendary';if(fl<=1&&avg>68)return'epic';if(avg>54)return'rare';if(avg>40)return'uncommon';return'common';}
+function calcRarity2(sh,du,fl,my,flaws,mat){const avg=(sh+du+fl+my)/4;if(mat.id==='shadow'&&flaws===0&&avg>65)return'mythic';if((mat.id==='dragon'||mat.id==='meteor')&&flaws<=1&&avg>60)return'legendary';if(flaws===0&&avg>84)return'legendary';if(flaws<=1&&avg>70)return'epic';if(avg>56)return'rare';if(avg>42)return'uncommon';return'common';}
+
+// ══════════════════════════════════════════════════════
+//  REVEAL SEQUENCE
+// ══════════════════════════════════════════════════════
+function startReveal(){ss('screen-reveal');document.querySelectorAll('.rev-phase').forEach(p=>{p.classList.remove('act');p.style.display='none';});$('rp1').style.display='flex';$('rp1').classList.add('act');startRevealAnim();runQuench();}
+let revT=0;
+function startRevealAnim(){
+  const cv=$('revCanvas');if(!cv)return;cv.width=window.innerWidth;cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d');
+  if(revAnimId)cancelAnimationFrame(revAnimId);
+  const pts=[];for(let i=0;i<120;i++)pts.push({x:rand(0,cv.width),y:rand(cv.height*.4,cv.height+100),vx:rand(-.8,.8),vy:-rand(.5,2.5),life:ri(100,300),r:ri(200,255),g:ri(60,160),sz:rand(.5,3)});
+  revT=0;
+  function frame(){if(!$('screen-reveal').classList.contains('active')){revAnimId=null;return;}
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const bg=ctx.createLinearGradient(0,cv.height,0,0);bg.addColorStop(0,'rgba(20,10,4,.97)');bg.addColorStop(.4,'rgba(10,6,3,.75)');bg.addColorStop(1,'rgba(5,4,4,0)');ctx.fillStyle=bg;ctx.fillRect(0,0,cv.width,cv.height);
+  const rc=currentSword?.rarity||'common';const gl=ctx.createRadialGradient(cv.width/2,cv.height*.6,0,cv.width/2,cv.height*.6,cv.height*.8);gl.addColorStop(0,rglow(rc).replace(',.',',.25,').replace(',.',','));gl.addColorStop(1,'transparent');ctx.fillStyle=gl;ctx.fillRect(0,0,cv.width,cv.height);
+  pts.forEach((p,i)=>{p.y-=p.vy+Math.sin(revT*.03+i)*.2;p.x+=Math.sin(revT*.02+i*.5)*.4;p.life--;if(p.y<-20||p.life<=0){pts[i]={x:rand(cv.width*.1,cv.width*.9),y:cv.height+20,vx:rand(-.8,.8),vy:-rand(.5,2.5),life:ri(100,300),r:ri(200,255),g:ri(60,160),sz:rand(.5,3)};}const a=Math.min(1,p.life/80)*.7;ctx.fillStyle=`rgba(${p.r},${p.g},0,${a})`;ctx.beginPath();ctx.arc(p.x,p.y,p.sz,0,Math.PI*2);ctx.fill();});
+  revT++;revAnimId=requestAnimationFrame(frame);}
+  frame();
+}
+
+const QUENCH_MSGS=['Submerging in water...','Steel shrieking as it cools...','Martensite forming along the edge...','Hamon crystallizing...','Blade straightening...','Final temperature equalizing...','Drawing the blade from the water...','Inspecting the edge...'];
+let qMsgIdx=0,qMsgInterval=null;
+function runQuench(){
+  const cv=$('quenchC');if(!cv)return;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;
+  qMsgIdx=0;if(qMsgInterval)clearInterval(qMsgInterval);
+  qMsgInterval=setInterval(()=>{qMsgIdx=(qMsgIdx+1)%QUENCH_MSGS.length;if($('qMsg'))$('qMsg').textContent=QUENCH_MSGS[qMsgIdx];},700);
+  let qt=0;
+  function qFrame(){if(!$('rp1').classList.contains('act')){return;}
+  ctx.fillStyle='rgba(0,0,0,.3)';ctx.fillRect(0,0,w,h);
+  // Steam / water
+  const wl=h*.65+Math.sin(qt*.04)*3;ctx.fillStyle='#0a1828';ctx.fillRect(0,wl,w,h-wl);
+  // Water shimmer
+  for(let i=0;i<8;i++){const wx=rand(0,w),wy=wl+rand(0,h-wl-10);ctx.strokeStyle=`rgba(80,140,200,${rand(.1,.3)})`;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(wx,wy);ctx.lineTo(wx+rand(20,60),wy);ctx.stroke();}
+  // Blade outline in water
+  ctx.save();ctx.translate(80,wl-20);const matC=currentSword?.material?.id==='ghost'?'#c8dce8':currentSword?.material?.id==='blood'?'#8a3a3a':'#7a8a9a';ctx.fillStyle=matC;ctx.fillRect(0,-4,w*.72,8);ctx.fillStyle=lhx(matC,30);ctx.fillRect(0,-4,w*.72,3);ctx.restore();
+  // Steam particles
+  for(let i=0;i<6;i++){const sx=ri(80,w-80)+Math.sin(qt*.05+i)*20;const sy=wl-rand(10,60+qt*.3);ctx.fillStyle=`rgba(180,200,220,${rand(.04,.15)})`;ctx.beginPath();ctx.arc(sx,sy,rand(5,18),0,Math.PI*2);ctx.fill();}
+  // Glow
+  const glow=ctx.createRadialGradient(w*.5,wl,0,w*.5,wl,150);glow.addColorStop(0,'rgba(255,120,20,.25)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,wl-100,w,200);
+  qt++;if(qt<200)requestAnimationFrame(qFrame);else{clearInterval(qMsgInterval);showRevPhase2();}}
+  requestAnimationFrame(qFrame);
+}
+
+function showRevPhase2(){
+  $('rp1').classList.remove('act');$('rp1').style.display='none';
+  const p2=$('rp2');p2.style.display='flex';p2.classList.add('act');
+  const sw=currentSword;
+  const rc=rcol(sw.rarity);
+  $('revName').style.color=rc;$('revName').style.textShadow=`0 0 30px ${rc},0 0 60px ${rc.replace('var(--','rgba(').replace(')',',0.4)')}`;
+  // Letter by letter
+  const fullName=sw.name;$('revName').textContent='';$('revName').style.opacity='1';
+  let ni=0;const ni2=setInterval(()=>{$('revName').textContent+=fullName[ni];ni++;if(ni>=fullName.length){clearInterval(ni2);setTimeout(()=>{$('revRar').textContent=sw.rarity.toUpperCase();$('revRar').style.color=rc;drawSword($('revSwordCanvas'),sw,680,160);setTimeout(showRevPhase3,2000);},600);}},80);
+}
+
+function showRevPhase3(){
+  $('rp2').classList.remove('act');$('rp2').style.display='none';
+  const p3=$('rp3');p3.style.display='flex';p3.classList.add('act');
+  const sw=currentSword;const rc=rcol(sw.rarity);
+  $('revName3').textContent=sw.name;$('revName3').style.color=rc;
+  $('revRar3').textContent=sw.rarity.toUpperCase();$('revRar3').style.color=rc;$('revRar3').style.borderColor=rc;
+  // Stats roll
+  const sg=$('revStats');sg.innerHTML='';
+  const sData=[['Sharpness',sw.stats.sharpness,'#ff8844'],['Durability',sw.stats.durability,'#4499cc'],['Flexibility',sw.stats.flexibility,'#44cc88'],['Mystique',sw.stats.mystique||sw.stats.balance,'#cc88ee']];
+  sData.forEach(([n,v,c],i)=>{const d=document.createElement('div');d.className='rsb';d.innerHTML=`<div class="rsb-v" style="color:${c}">${v}</div><div class="rsb-l">${n}</div>`;sg.appendChild(d);setTimeout(()=>d.classList.add('show'),i*200+100);});
+  // Value
+  $('revValAmt').textContent=sw.value.toLocaleString();
+  // Character
+  drawChar($('revCharC'),sw.char||G.char,true);
+  $('revCI').innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;color:var(--thead);margin-bottom:4px;">${G.char.name||'Unnamed'}</div><div style="font-size:.78rem;color:var(--ember2);font-style:italic;margin-bottom:12px;">${G.char.title}</div>${[['Material',sw.material?.name],['Blade',sw.bladeType?.name],['Folds',sw.folds],['Quality',Math.round(sw.quality)+'%']].map(([k,v])=>`<div class="prow"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('')}`;
+  // Flaws
+  if(sw.flaws?.length>0){$('revFlaws').innerHTML=`<div style="background:rgba(180,30,20,.08);border:1px solid rgba(180,30,20,.3);border-radius:4px;padding:14px;"><div style="font-family:'Cinzel',serif;font-size:.65rem;letter-spacing:.18em;color:var(--tdim);margin-bottom:8px;">BLADE FLAWS</div>${sw.flaws.map(f=>`<span class="flaw-chip">${f}</span>`).join('')}</div>`;}
+  else $('revFlaws').innerHTML='';
+}
+
+function saveAndContinue(){if(!currentSword)return;if(!G.inv.find(s=>s===currentSword)){G.inv.push(currentSword);toast('✓ Added to collection');}}
+function showInv(){buildInv();ss('screen-inv');}
+function buildInv(){
+  const g=$('invList');ug();$('invSub').textContent=G.inv.length+' blades collected';
+  if(G.inv.length===0){g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--tdim);font-style:italic;">No swords forged yet.</div>';return;}
+  g.innerHTML='';G.inv.forEach(sw=>{const c=document.createElement('div');c.className='inv-card';const rc=rcol(sw.rarity);
+  c.innerHTML=`<div class="inv-sword"><canvas width="250" height="90"></canvas></div><div class="inv-body"><div class="inv-name" style="color:${rc}">${sw.name}</div><div class="inv-meta"><span class="rb ${rcls(sw.rarity)}">${sw.rarity}</span><span class="inv-val">⬡${sw.value.toLocaleString()}</span></div><div style="font-size:.76rem;color:var(--tdim);">⚔${sw.stats?.sharpness} 🛡${sw.stats?.durability} ⚡${sw.stats?.flexibility}${sw.flaws?.length?` · <span style="color:#cc8880">⚠${sw.flaws.length} flaw(s)</span>`:''}</div></div>`;
+  g.appendChild(c);const cv=c.querySelector('canvas');setTimeout(()=>drawSword(cv,sw,250,90),30);});
+  // Market
+  const mg=$('mktList');
+  if(G.market.length===0){mg.innerHTML='<div style="color:var(--tdim);font-style:italic;text-align:center;padding:24px;">No active listings.</div>';return;}
+  mg.innerHTML='';G.market.forEach(listing=>{const d=document.createElement('div');d.className='mkt-card';const maxBid=listing.bids[listing.bids.length-1]?.amount||listing.starting;d.innerHTML=`<div><canvas width="180" height="70"></canvas></div><div><div style="font-family:'Cinzel',serif;font-size:.9rem;font-weight:700;color:${rcol(listing.sword.rarity)}">${listing.sword.name}</div><div class="rb ${rcls(listing.sword.rarity)}" style="font-size:.58rem;">${listing.sword.rarity}</div><div style="margin-top:8px;">${listing.bids.slice(-3).map(b=>`<div class="bid-row"><span class="bidder">${b.bidder}</span><span class="bid-amt">⬡${b.amount.toLocaleString()}</span></div>`).join('')}</div></div><div style="text-align:right;"><div style="font-family:'Cinzel',serif;font-size:1.2rem;color:var(--gold2);">⬡${maxBid.toLocaleString()}</div><div style="font-size:.7rem;color:var(--tdim);margin-bottom:10px;">Current Bid</div><button class="btn btn-gold btn-sm" onclick="acceptBid('${listing.id}')">Accept ⬡${maxBid.toLocaleString()}</button></div>`;d.appendChild(document.createElement('div'));g.appendChild(d);const cv=d.querySelector('canvas');setTimeout(()=>drawSword(cv,listing.sword,180,70),30);});
+}
+
+function listOnMarket(){if(!currentSword)return;saveAndContinue();
+  const starting=currentSword.value;const listing={id:Date.now().toString(),sword:currentSword,starting,bids:[]};
+  const numBids=ri(2,6);let curBid=Math.round(starting*.7);
+  for(let i=0;i<numBids;i++){curBid=Math.round(curBid*rand(1.05,1.18));listing.bids.push({bidder:rItem(BUYERS),amount:curBid});}
+  G.market.push(listing);toast('🏮 Listed on market! Bidders are interested...');
+}
+function acceptBid(id){
+  const idx=G.market.findIndex(l=>l.id===id);if(idx===-1)return;
+  const listing=G.market[idx];const finalBid=listing.bids[listing.bids.length-1].amount;
+  G.gold+=finalBid;G.market.splice(idx,1);ug();toast(`✓ Sold for ⬡${finalBid.toLocaleString()}!`);buildInv();
+}
+
+// ══════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{ug();initHome();});
+</script>
+</body>
+</html>
