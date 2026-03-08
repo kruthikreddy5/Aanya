@@ -1,37 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KRUTHIK | Builder</title>
+    <title>KRUTHIK | Deconstructed Portfolio</title>
     <style>
         :root {
-            --bg-color: #0B120B; /* Deep Forest Shadow */
-            --tag-bg: #1A261A;   /* Muted Pine */
-            --accent: #4ADE80;   /* Neon Forest */
+            --bg-color: #050805; /* Even deeper black-green */
+            --tag-bg: #121A12;   /* Dark forest pine */
+            --accent: #4ADE80;   /* Signature neon green */
             --text-main: #E0E0E0;
-            --text-muted: #A3B1A3;
+            --text-muted: #7A857A;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: 'Courier New', Courier, monospace; /* Monospaced vibe */
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        /* The Signature Header */
-        h1 {
-            font-size: 4rem;
-            letter-spacing: -2px;
-            margin-bottom: 0.5rem;
+        /* Background Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(var(--tag-bg) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.2;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 10vw;
+            border-bottom: 1px solid #1a261a;
+        }
+
+        /* Big Bold Hero */
+        .hero h1 {
+            font-size: clamp(4rem, 15vw, 12rem); /* Massive scaling text */
             text-transform: uppercase;
+            line-height: 0.9;
+            margin-bottom: 2rem;
         }
 
         .wavy {
@@ -40,81 +56,98 @@
             text-decoration-color: var(--accent);
         }
 
-        /* The Deconstructed Identity Tag */
+        /* Large Identity Tag Section */
+        .identity-wrap {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
         .identity-tag {
             background-color: var(--tag-bg);
-            padding: 2rem;
-            width: 280px;
-            border-radius: 4px;
-            box-shadow: 10px 10px 0px rgba(0, 0, 0, 0.3);
-            position: relative;
-            transform: rotate(-2deg); /* Organic, deconstructed feel */
-            margin-top: 2rem;
+            padding: 3rem;
+            width: 100%;
+            max-width: 500px;
+            transform: rotate(2deg);
+            border: 1px solid var(--accent);
+            box-shadow: 20px 20px 0px rgba(0,0,0,0.5);
         }
 
-        .tag-header {
-            font-size: 0.8rem;
+        .tag-label { color: var(--accent); font-size: 0.9rem; margin-bottom: 1rem; }
+        .tag-title { font-size: 2.5rem; font-weight: 900; margin-bottom: 1.5rem; }
+
+        /* Scrawled Note Style */
+        .note {
+            font-family: 'Georgia', serif; /* Contrast font for "handwritten" look */
+            font-style: italic;
             color: var(--accent);
-            margin-bottom: 1rem;
-            border-bottom: 1px solid var(--text-muted);
-            padding-bottom: 5px;
-        }
-
-        .tag-name {
             font-size: 1.5rem;
-            font-weight: bold;
-            margin: 10px 0;
+            max-width: 400px;
+            margin-top: 2rem;
+            opacity: 0.8;
         }
 
-        .tag-details {
-            font-size: 0.75rem;
-            line-height: 1.6;
-            color: var(--text-muted);
+        /* Large Scrolling Content Blocks */
+        .content-block {
+            margin-top: 4rem;
+            max-width: 800px;
         }
 
-        .barcode {
-            margin-top: 1.5rem;
-            height: 40px;
-            background: repeating-linear-gradient(
-                90deg,
-                var(--text-main),
-                var(--text-main) 2px,
-                transparent 2px,
-                transparent 4px
-            );
-            width: 100%;
+        .big-number {
+            font-size: 5rem;
+            color: var(--tag-bg);
+            -webkit-text-stroke: 1px var(--text-muted);
+            font-weight: 900;
         }
 
-        /* Background Grid */
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: radial-gradient(var(--tag-bg) 1px, transparent 1px);
-            background-size: 30px 30px;
-            z-index: -1;
+        .barcode-footer {
+            height: 100px;
+            background: repeating-linear-gradient(90deg, var(--text-muted), var(--text-muted) 2px, transparent 2px, transparent 8px);
             opacity: 0.3;
+            margin-top: 5rem;
         }
+
+        /* Smooth Scrolling */
+        html { scroll-behavior: smooth; }
+
     </style>
 </head>
 <body>
     <div class="grid-overlay"></div>
 
-    <header>
-        <h1 class="wavy">KRUTHIK</h1>
-    </header>
+    <section class="hero">
+        <p class="tag-label">// PORTFOLIO_V1.0</p>
+        <h1><span class="wavy">KRUTHIK</span></h1>
+        <p class="note">"Software should feel honest."</p>
+    </section>
 
-    <div class="identity-tag">
-        <div class="tag-header">BUILDER // PATTERN-SEEKER</div>
-        <div class="tag-name">ID: KRUTHIK</div>
-        <div class="tag-details">
-            LOC: HYDERABAD, IN <br>
-            STATUS: GRADE 11 / MPC <br>
-            MINDSET: CREATOR
+    <section class="identity-wrap">
+        <div class="identity-tag">
+            <div class="tag-label">OBJECT_TYPE: CREATOR</div>
+            <div class="tag-title">ID: KRUTHIK REDDY</div>
+            <div class="tag-details">
+                [LOC] HYDERABAD, TS, IN <br>
+                [EDU] GRADE 11 / MPC<br>
+                [INT] VIBE CODING / RE-ENGINEERING
+            </div>
+            <div style="margin-top: 20px; font-size: 0.8rem; border-top: 1px solid var(--text-muted); padding-top: 10px;">
+                VIBE CODING?
+            </div>
         </div>
-        <div class="barcode"></div>
-    </div>
+    </section>
+
+    <section>
+        <div class="content-block">
+            <div class="big-number">01</div>
+            <h2 style="font-size: 3rem; color: var(--accent);">THE CREATOR MINDSET</h2>
+            <p style="font-size: 1.2rem; margin-top: 1rem; color: var(--text-muted);">
+                Driven by pattern recognition and strategy. I don't just consume tools; I build systems to achieve wealth and independence. 
+                Focused on minimalist, high-performance web design.
+            </p>
+        </div>
+        
+        <div class="barcode-footer"></div>
+    </section>
+
 </body>
 </html>
